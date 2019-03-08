@@ -19,10 +19,10 @@ character of each line is not a number.
 """
 
 #############Input files#############
-preocv_file = 'preocv.txt'
-cv_file = 'CV.txt'
-postocv_file = 'postOCV.txt'
-icp_file = 'ICP.csv'
+preocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_01_OCV_C01.txt'
+cv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_03_CV_C01.txt'
+postocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_04_OCV_C01.txt'
+icp_file = '05_Zn_CV_5mVs_30RPM_1MKOH_OneNeb2_01.csv'
 #####################################
 
 files= [preocv_file,cv_file,postocv_file,icp_file]
@@ -43,9 +43,31 @@ t_icp = t_icp*60. # converting to seconds
 firstvalue = t_icp[0]
 t_icp = t_icp - firstvalue # Set the start time = 0.
 
+########Dodgy part, changing times########
+# Change the times to fit in the range from the OCV measurements
+i=2 ; ih = jumpheader(infiles[i])
+times = np.loadtxt(infiles[i], usecols= (0,),unpack=True, skiprows=ih)
+last_t = times[len(times)-1]
+diff_t = np.unique(np.array([j-i for i, j in zip(times[:-1], times[1:])]))
+if (len(diff_t) > 1):
+    print('WARNING: there are different step sizes within post_ocv: {}'.format(diff_t))
+
+last_icp = t_icp[len(t_icp)-1]
+diff_icp = np.unique(np.array([j-i for i, j in zip(t_icp[:-1], t_icp[1:])]))
+if (len(diff_t) > 1):
+    print('WARNING: there are different step sizes within ICP: {}'.format(diff_t))
+
+# Assuming the differences are fixed
+# (which doesn't seem to be the case)
+shift = (last_t - t_icp[0])/float(len(t_icp))
+print(last_t,last_icp,shift*len(t_icp))
+
+t_icp = np.array([firstvalue + j*shift for j in range(len(t_icp))])
+########################################
+
 # Loop over the (O)CV files
 nsubsets = len(files)-1 
-for i in range(1):#nsubsets):
+for i in range(nsubsets):
     # Read the data 
     ih = jumpheader(infiles[i])
     if (i==0 or i ==2):
@@ -56,9 +78,17 @@ for i in range(1):#nsubsets):
         # Read the current as prop 
         times,prop = np.loadtxt(infiles[i], usecols= (0,3),unpack=True, skiprows=ih)
         prop_label = 'I (mA)'
+
+    # Check the stepping size
+    diff_t = np.unique(np.array([j-i for i,
+                                 j in zip(times[:-1], times[1:])]))
+    if (len(diff_t) > 1):
+        print('WARNING: there are different step sizes within {}: {}'.format(prefix,diff_t))
         
     # Find the time of the last measurement
-    last_t = times[len(times)-1] #; print(last_t)
+    last_t = times[len(times)-1] ; print(last_t)
+    print(t_icp[0],t_icp[-1])
+    
     # Find the index for the corresponding icpt
     d_index = ind_val_leq(t_icp,last_t) #; print(d_index)
     # Define the ICP subset 
@@ -95,9 +125,7 @@ for i in range(1):#nsubsets):
     print('Output plot: ',plotfile)
     
     # Write output and plot
-    #tofile = zip(xx,yy1,yy2)
-    data = np.array([xx,yy1,yy2])
-    tofile = data.transpose()
+    tofile = np.column_stack((xx,yy1,yy2))
     outfil = 'output/'+files[i]
     with open(outfil, 'w') as outf:
         outf.write(prefix[i]+'_time(s),V(V),ICP \n')
@@ -105,4 +133,4 @@ for i in range(1):#nsubsets):
             np.savetxt(outf,tofile,fmt='%1.8e',delimiter=',')
     outf.closed
     print('Output file: {}'.format(outfil))
-    sys.exit()
+
