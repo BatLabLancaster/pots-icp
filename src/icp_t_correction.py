@@ -3,23 +3,33 @@ import sys, os.path
 from .io import jumpheader
 import matplotlib.pyplot as plt
 
-def icp_t_correction(steps_icp,steps_pots):
+def icp_t_correction(steps_icp,spots_pre,spots_cv,spots_post):
     # Check that the calibration files exist in the inputdata folder
-    for steps_f in [steps_pots,steps_icp]:
+    for steps_f in [spots_pre,spots_cv,spots_post,steps_icp]:
         ff = 'inputdata/'+steps_f
         if not os.path.isfile(ff):
             print('STOP: file not found, \n {}'.format(ff)) ; sys.exit()
 
-    # Read the step times
-    ih = jumpheader('inputdata/'+steps_pots)
-    ts_pots = np.loadtxt('inputdata/'+steps_pots,
+    # Read the potential step times
+    ts_pots = np.array([])
+    for steps_f in [spots_pre,spots_cv,spots_post]:
+        ih = jumpheader('inputdata/'+steps_f)
+        times = np.loadtxt('inputdata/'+steps_f,
                          usecols= (0,),unpack=True, skiprows=ih)
-
+        ts_pots = np.append(ts_pots,times)
+        
+    # Read the ICP step times
     ih = jumpheader('inputdata/'+steps_icp)
     ts_icp = np.loadtxt('inputdata/'+steps_icp, delimiter=',',
                         usecols= (0,),unpack=True, skiprows=ih)
     ts_icp = ts_icp*60. # in seconds
-    xx = ts_icp
+
+    if (len(ts_icp)<=len(ts_pots)):
+        xx = np.interp(ts_icp,ts_pots,ts_pots)
+        yy = ts_icp
+    else:
+        xx = ts_pots
+        yy = np.interp(ts_pots,ts_icp,ts_icp)
     
     # Fit a straight line to time(pots) vs time(ICP)
     # time(pots) = fit_a*time(icp) + fit_b

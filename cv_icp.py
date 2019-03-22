@@ -20,7 +20,9 @@ character of each line is not a number.
 """
 
 #############Input files#############
-steps_pots = '01_Zn_Steps_1MKOH_30RPM_01_OCV_C01.txt'
+steps_pots_pre = '01_Zn_Steps_1MKOH_30RPM_01_OCV_C01.txt'
+steps_pots_cv = '01_Zn_Steps_1MKOH_30RPM_01_OCV_C01.txt'
+steps_pots_post = '01_Zn_Steps_1MKOH_30RPM_01_OCV_C01.txt'
 steps_icp = '01_Zn_Steps_1MKOH_30RPM.csv'
 preocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_01_OCV_C01.txt'
 cv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_03_CV_C01.txt'
@@ -30,7 +32,10 @@ icp_file = '05_Zn_CV_5mVs_30RPM_1MKOH_OneNeb2_01.csv'
 
 # Time correction calculations
 # icp_t_correction(x,y)
-slope, zero = icp_t_correction(steps_icp,steps_pots)
+slope, zero = icp_t_correction(steps_icp,
+                               steps_pots_pre,
+                               steps_pots_cv,
+                               steps_pots_post)
 
 ##################################################
 files= [preocv_file,cv_file,postocv_file,icp_file]
@@ -49,32 +54,9 @@ t_icp, icp = np.loadtxt(infiles[3], usecols= (0,2),
                                  unpack=True, skiprows=ih, delimiter=',')
 t_icp = t_icp*60. # converting to seconds
 firstvalue = t_icp[0]
-t_icp = t_icp - firstvalue # Set the start time = 0.
 
-# Use above correction for the time
-t_icp = t_icp/slope
-
-#########Dodgy part, changing times########
-## Change the times to fit in the range from the OCV measurements
-#i=2 ; ih = jumpheader(infiles[i])
-#times = np.loadtxt(infiles[i], usecols= (0,),unpack=True, skiprows=ih)
-#last_t = times[len(times)-1]
-#diff_t = np.unique(np.array([j-i for i, j in zip(times[:-1], times[1:])]))
-#if (len(diff_t) > 1):
-#    print('WARNING: there are different step sizes within post_ocv: {}'.format(diff_t))
-#
-#last_icp = t_icp[len(t_icp)-1]
-#diff_icp = np.unique(np.array([j-i for i, j in zip(t_icp[:-1], t_icp[1:])]))
-#if (len(diff_t) > 1):
-#    print('WARNING: there are different step sizes within ICP: {}'.format(diff_t))
-#
-## Assuming the differences are fixed
-## (which doesn't seem to be the case)
-#shift = (last_t - t_icp[0])/float(len(t_icp))
-#print(last_t,last_icp,shift*len(t_icp))
-#
-#t_icp = np.array([firstvalue + j*shift for j in range(len(t_icp))])
-#########################################
+# Use correction calculated above for the time
+t_icp = t_icp/slope - zero
 
 # Loop over the (O)CV files
 nsubsets = len(files)-1 
