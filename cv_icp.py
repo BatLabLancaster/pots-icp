@@ -20,10 +20,8 @@ character of each line is not a number.
 """
 
 #############Input files#############
-steps_pots_pre = '01_Zn_Steps_1MKOH_30RPM_01_OCV_C01.txt'
-steps_pots_cv = '01_Zn_Steps_1MKOH_30RPM_01_OCV_C01.txt'
-steps_pots_post = '01_Zn_Steps_1MKOH_30RPM_01_OCV_C01.txt'
-steps_icp = '01_Zn_Steps_1MKOH_30RPM.csv'
+steps_pots_cv = '08_Zn_Steps_30RPM_1MKOH_OneNeb2_01_02_CP_C01.txt'
+steps_icp = '08_Zn_Steps_30RPM_1MKOH_OneNeb2_01.csv'
 preocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_01_OCV_C01.txt'
 cv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_03_CV_C01.txt'
 postocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_04_OCV_C01.txt'
@@ -32,10 +30,7 @@ icp_file = '05_Zn_CV_5mVs_30RPM_1MKOH_OneNeb2_01.csv'
 
 # Time correction calculations
 # icp_t_correction(x,y)
-slope, zero = icp_t_correction(steps_icp,
-                               steps_pots_pre,
-                               steps_pots_cv,
-                               steps_pots_post)
+slope, zero = icp_t_correction(steps_icp,steps_pots_cv)
 
 ##################################################
 files= [preocv_file,cv_file,postocv_file,icp_file]
@@ -56,7 +51,7 @@ t_icp = t_icp*60. # converting to seconds
 firstvalue = t_icp[0]
 
 # Use correction calculated above for the time
-t_icp = t_icp/slope - zero
+t_icp = (t_icp - zero)/slope
 
 # Loop over the (O)CV files
 nsubsets = len(files)-1 
