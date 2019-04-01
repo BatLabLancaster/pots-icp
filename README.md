@@ -2,7 +2,8 @@
  1. Copy the input files into the inputdata folder
  2. Modify the names for the input files at the top of cv_icp.py
  3. Run the python program, for example typing in the command line: '''python cv_icp.py'''
- 4. Find your output files and plots in the output folder.
+ 4. Check the time correction by looking that the two pop-up figures make senss. These can be close clicking the cross on the right top corner.
+ 5. Find your output files and plots in the output folder.
 
 
 **Repository Organization**

@@ -1,3 +1,9 @@
+"""A python module to correct the time drft from the ICP measurements.
+
+.. moduleauthor:: Violeta Gonzalez-Perez <violegp@gmail.com>
+
+"""
+
 import numpy as np
 import sys, os.path
 from .io import jumpheader
