@@ -1,3 +1,7 @@
+"""
+.. moduleauthor:: Violeta Gonzalez-Perez <violegp@gmail.com>
+"""
+
 def jumpheader(infile):
     '''
     Given a file with a structure: header+data, 

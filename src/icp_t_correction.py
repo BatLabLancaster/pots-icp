@@ -1,9 +1,6 @@
-"""A python module to correct the time drft from the ICP measurements.
-
-.. moduleauthor:: Violeta Gonzalez-Perez <violegp@gmail.com>
-
 """
-
+.. moduleauthor:: Violeta Gonzalez-Perez <violegp@gmail.com>
+"""
 import numpy as np
 import sys, os.path
 from .io import jumpheader
@@ -13,16 +10,31 @@ import matplotlib.gridspec as gridspec
 coeff = 1.
 dt = 120.
 
-def icp_t_correction(steps_icp,steps_cv):
+def icp_t_correction(steps_icp,steps_pots,show_plots=True):
+    '''
+    Correct the time drift from the ICP measurements, by fitting to
+    a straight line the start of a experiment using pulses (steps):
+    t_icp = slope*t_pots + zero
+
+    Arg:
+    steps_icp: characters, the name of the ICP steps file
+    steps_pots: characters, the name of the Potentiostat steps file
+    show_plots: boolean, to show or not the time correction plots
+
+    Return:
+    slope: float, the slope of the best fit
+    zero: float, the shift of the best fit
+    '''
+    
     # Check that the calibration files exist in the inputdata folder
-    for steps_f in [steps_cv,steps_icp]:
+    for steps_f in [steps_pots,steps_icp]:
         ff = 'inputdata/'+steps_f
         if not os.path.isfile(ff):
             print('STOP: file not found, \n {}'.format(ff)) ; sys.exit()
 
     # Read the potential step times
-    ih = jumpheader('inputdata/'+steps_cv)
-    ts_pots, i_pots = np.loadtxt('inputdata/'+steps_cv,
+    ih = jumpheader('inputdata/'+steps_pots)
+    ts_pots, i_pots = np.loadtxt('inputdata/'+steps_pots,
                        usecols= (0,3),unpack=True, skiprows=ih)
 
     # Read the ICP step times
@@ -101,7 +113,7 @@ def icp_t_correction(steps_icp,steps_cv):
     plotfile = 'output/start_step.png'
     plt.savefig(plotfile)
     print('Plot with the start of the steps: {}'.format(plotfile))
-    plt.show()
+    if show_plots: plt.show()
 
     # Fit a straight line to time(pots) vs time(ICP)
     # time(icp) = slope*time(pots) + zero
@@ -174,7 +186,7 @@ def icp_t_correction(steps_icp,steps_cv):
     prefix = steps_icp.split('.')[0]
     plotfile = 'output/'+prefix+'_times.png'
     fig.savefig(plotfile)
-    print('Times plot: ',plotfile)
-    plt.show()
-    sys.exit()
+    print('Time correction plot: {} \n'.format(plotfile))
+    if show_plots: plt.show()
+
     return slope,zero

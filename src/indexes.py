@@ -1,7 +1,12 @@
+"""
+.. moduleauthor:: Violeta Gonzalez-Perez <violegp@gmail.com>
+"""
+
 def ind_val_leq(arr,val):
     '''
     Given an array, find the index of the last element such that:
     element <= val
+
 
     Arg:
     arr: float array
