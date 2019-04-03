@@ -36,13 +36,14 @@ def icp_t_correction(steps_icp,steps_pots,show_plots=True):
     ih = jumpheader('inputdata/'+steps_pots)
     ts_pots, i_pots = np.loadtxt('inputdata/'+steps_pots,
                        usecols= (0,3),unpack=True, skiprows=ih)
-
+    i_pots = abs(i_pots)
+    
     # Read the ICP step times
     ih = jumpheader('inputdata/'+steps_icp)
     ts_icp, i_icp = np.loadtxt('inputdata/'+steps_icp, delimiter=',',
                         usecols= (0,2),unpack=True, skiprows=ih)
     ts_icp = ts_icp*60. # in seconds
-    #i_icp = i_icp*coeff
+    i_icp = abs(i_icp)
     i_icp = (i_icp-min(i_icp))*max(i_pots)/max(i_icp)
 
     # Create a time array that starts in 180'' and

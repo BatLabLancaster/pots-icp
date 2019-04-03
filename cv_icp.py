@@ -11,12 +11,14 @@ The header of the files can be of any lenght as long as the first
 character of each line is not a number.
 """
 #############Input files names to be modified#############
-steps_pots = '01_Zn_Steps_1MKOH_30RPM_02_CP_C01.txt'
-steps_icp = '01_Zn_Steps_1MKOH_30RPM.csv'
+steps_pots = '08_Zn_Steps_30RPM_1MKOH_OneNeb2_01_02_CP_C01.txt'
+steps_icp = '08_Zn_Steps_30RPM_1MKOH_OneNeb2_01.csv'
 preocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_01_OCV_C01.txt'
 cv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_03_CV_C01.txt'
 postocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_04_OCV_C01.txt'
-icp_file = '05_Zn_CV_5mVs_30RPM_1MKOH_OneNeb2_01.csv'
+icp_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02.csv'
+
+showplots = True  # True = plots are shown while program runs 
 #####################################End of modifications
 
 import numpy as np
@@ -45,7 +47,7 @@ t_icp, icp = np.loadtxt(infiles[3], usecols= (0,2),
 t_icp = t_icp*60. # converting to seconds
 
 # Correct the ICP time
-slope, zero = icp_t_correction(steps_icp,steps_pots,show_plots=True)
+slope, zero = icp_t_correction(steps_icp,steps_pots,show_plots=showplots)
 t_icp = (t_icp - zero)/slope
 
 # Loop over the (O)CV files
@@ -124,7 +126,8 @@ for i in range(nsubsets):
     plotfile = 'output/'+prefix[i]+'.pdf'
     fig.savefig(plotfile,bbox_inches='tight')
     print('Output plot: ',plotfile)
-    
+    if (showplots): plt.show()
+        
     # Write output and plot
     if (i==1):
         header = prefix[i]+'_time(s),V(V),I(mA),ICP \n'
