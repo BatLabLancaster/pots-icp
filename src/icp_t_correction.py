@@ -10,7 +10,7 @@ import matplotlib.gridspec as gridspec
 coeff = 1.
 dt = 120.
 
-def icp_t_correction(steps_icp,steps_pots,show_plots=True):
+def icp_t_correction(steps_icp,steps_pots,show_plots=True,plot_format='pdf'):
     '''
     Correct the time drift from the ICP measurements, by fitting to
     a straight line the start of a experiment using pulses (steps):
@@ -111,7 +111,7 @@ def icp_t_correction(steps_icp,steps_pots,show_plots=True):
     plt.plot(ts_icp3,i_icp3,'y.',label='ICP up to the 1st peak')
     plt.plot(gt_icp,gi_icp,'ro',label='ICP Step start')
     leg = plt.legend(loc=1) ; leg.draw_frame(False)
-    plotfile = 'output/start_step.png'
+    plotfile = 'output/start_step.'+plot_format
     plt.savefig(plotfile)
     print('Plot with the start of the steps: {}'.format(plotfile))
     if show_plots: plt.show()
@@ -185,7 +185,7 @@ def icp_t_correction(steps_icp,steps_pots,show_plots=True):
 
     # Save plot
     prefix = steps_icp.split('.')[0]
-    plotfile = 'output/'+prefix+'_times.png'
+    plotfile = 'output/'+prefix+'_times.'+plot_format
     fig.savefig(plotfile)
     print('Time correction plot: {} \n'.format(plotfile))
     if show_plots: plt.show()

@@ -18,7 +18,8 @@ cv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_03_CV_C01.txt'
 postocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_04_OCV_C01.txt'
 icp_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02.csv'
 
-showplots = True  # True = plots are shown while program runs 
+showplots = True  # True = plots are shown while program runs
+plotformat = 'png' # or 'pdf'  or 'jpg'
 #####################################End of modifications
 
 import numpy as np
@@ -47,7 +48,9 @@ t_icp, icp = np.loadtxt(infiles[3], usecols= (0,2),
 t_icp = t_icp*60. # converting to seconds
 
 # Correct the ICP time
-slope, zero = icp_t_correction(steps_icp,steps_pots,show_plots=showplots)
+slope, zero = icp_t_correction(steps_icp,steps_pots,
+                               show_plots=showplots,
+                               plot_format=plotformat)
 t_icp = (t_icp - zero)/slope
 
 # Loop over the (O)CV files
@@ -123,7 +126,7 @@ for i in range(nsubsets):
     ax1.set_ylabel(prop_label, color='g')
     ax2.set_ylabel('ICP', color='b')
 
-    plotfile = 'output/'+prefix[i]+'.pdf'
+    plotfile = 'output/'+prefix[i]+'.'+plotformat
     fig.savefig(plotfile,bbox_inches='tight')
     print('Output plot: ',plotfile)
     if (showplots): plt.show()
