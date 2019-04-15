@@ -18,7 +18,9 @@ cv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_03_CV_C01.txt'
 postocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_04_OCV_C01.txt'
 icp_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02.csv'
 
-showplots = True  # True = plots are shown while program runs
+area =  1. # In cm2
+
+showplots = False  # True = plots are shown while program runs
 plotformat = 'png' # or 'pdf'  or 'jpg'
 #####################################End of modifications
 
@@ -132,18 +134,24 @@ for i in range(nsubsets):
     if (showplots): plt.show()
         
     # Write output and plot
+    header1 = '# '+prefix[i]+'\n'
+    tofile = np.array([])
     if (i==1):
-        header = prefix[i]+'_time(s),V(V),I(mA),ICP \n'
-        tofile = np.column_stack((x_pots,vv,y_pots,y_icp))
+        header2 = '# time,E,I,intensity,j \n'
+        header3 = '# s,V,mA,counts,mA cm-2 \n'
+        y_pots_area = y_pots/area
+        tofile = np.column_stack((x_pots,vv,y_pots,y_icp,y_pots_area))
     else:
-        header = prefix[i]+'_time(s),V(V),ICP \n'
+        header2 = '# time,E,intensity \n'
+        header3 = '# s,V,counts \n'
         tofile = np.column_stack((x_pots,y_pots,y_icp))
-        
+
     outfil = 'output/'+files[i]
     with open(outfil, 'w') as outf:
-        outf.write(header)
-        for row in tofile:
-            np.savetxt(outf,tofile,fmt='%1.8e',delimiter=',')
+        outf.write(header1)
+        outf.write(header2)
+        outf.write(header3)
+        np.savetxt(outf,tofile,fmt='%1.8e',delimiter=',')
     outf.closed
     print('Output file: {}'.format(outfil))
 
