@@ -63,8 +63,8 @@ def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fracti
     These two variables are defined as global internal variables.
     '''
     # Set arrays for the ICP step starts
-    gt_icp = np.zeros(shape=len(gt_pots))
-    gi_icp = np.zeros(shape=len(gt_pots))
+    gt_icp = np.zeros(shape=len(gt_pots)) ; gt_icp.fill(-999.)
+    gi_icp = np.zeros(shape=len(gt_pots)) ; gi_icp.fill(-999.)
 
     # Find the maximum dt
     maxdt = np.max(np.diff(ts_icp))
@@ -103,6 +103,7 @@ def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fracti
             if (np.shape(ind)[1] > 0):
                 indexes = np.squeeze(ind)
                 index = indexes[-1]
+
                 gt_icp[gjj] = tsubs[index]
                 gi_icp[gjj] = isubs[index]
                 if (gjj < len(gt_pots)-1):
@@ -120,7 +121,8 @@ def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fracti
     plt.plot(ts_icp1,i_icp1,'r',label='ICP signal')
     plt.plot(ts_icp2,i_icp2,'g.',label='1st ICP peak')
     plt.plot(ts_icp3,i_icp3,'y.',label='ICP up to the 1st peak')
-    plt.plot(gt_icp,gi_icp,'ro',label='ICP Step start')
+    ind=np.where(gt_icp>-999.)
+    plt.plot(gt_icp[ind],gi_icp[ind],'ro',label='ICP Step start')
     leg = plt.legend(loc=1) ; leg.draw_frame(False)
 
     plotfile = 'output/start_step_'+prefix+'.'+plot_format
@@ -162,14 +164,17 @@ def icp_t_correction(steps_icp,steps_pots,icol_icp,height_fraction,show_plots=Tr
 
     # Generate the start of the ICP steps
     gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fraction,prefix,plot_format='pdf')
+
+    # Remove unassigned starting points
+    ind=np.where(gt_icp>-999.)
     
     # Fit a straight line to time(pots) vs time(ICP)
     # time(icp) = slope*time(pots) + zero
-    fit, res, dum1, dum2, dum3 = np.polyfit(gt_pots,gt_icp,1,full=True)
+    fit, res, dum1, dum2, dum3 = np.polyfit(gt_pots[ind],gt_icp[ind],1,full=True)
     slope = fit[0] ; zero = fit[1] 
 
     # Plot the corrected steps
-    show_corrected_steps(slope,zero,gt_pots,gt_icp,ts_pots,ts_icp,i_pots,i_icp,prefix,plot_format='pdf')
+    show_corrected_steps(slope,zero,gt_pots[ind],gt_icp[ind],ts_pots,ts_icp,i_pots,i_icp,prefix,plot_format='pdf')
 
     if show_plots: plt.show()
     

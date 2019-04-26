@@ -11,8 +11,8 @@ The header of the files can be of any lenght as long as the first
 character of each line is not a number.
 """
 #############Input files names to be modified#############
-steps_pots = '06_Zn_Steps_1MKOH_3mLs_02_CP_C01.txt'
-steps_icp = '06_Zn_Steps_1MKOH_30RPM.csv'
+steps_pots = '05_Zn_Steps_10RPM_1MKOH_02_CP_C01.txt'
+steps_icp = '05_Zn_Steps_10RPM_1MKOH.csv'
 preocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_01_OCV_C01.txt'
 cv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_03_CV_C01.txt'
 postocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_04_OCV_C01.txt'
@@ -23,7 +23,7 @@ icol_icp = 1 # Column with the ICP Steps
 
 height_fraction = 3. # Affecting the calculation of the ICP steps
 
-correct_time_manually = False # Assume the following values
+correct_time_manually = True # Assume the following values
 manual_slope = 0.95
 manual_zero = 10.
 
@@ -67,8 +67,8 @@ if correct_time_manually:
     i_icp = (i_icp-min(i_icp))*max(i_pots)/max(i_icp)
     gt_pots,gi_pots = get_start_step_pots(ts_icp,ts_pots,i_pots)
     gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fraction,prefix,plot_format='pdf')
-
-    show_corrected_steps(slope,zero,gt_pots,gt_icp,ts_pots,ts_icp,i_pots,i_icp,prefix,plot_format='pdf')
+    ind=np.where(gt_icp>-999.)
+    show_corrected_steps(slope,zero,gt_pots[ind],gt_icp[ind],ts_pots,ts_icp,i_pots,i_icp,prefix,plot_format='pdf')
     if (showplots): plt.show()
 else:
     slope, zero = icp_t_correction(steps_icp,steps_pots,
