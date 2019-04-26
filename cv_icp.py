@@ -21,7 +21,7 @@ icp_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02.csv'
 area =  1. # In cm2
 icol_icp = 1 # Column with the ICP Steps
 
-correct_time_manually = True # Assume the following values
+correct_time_manually = False # Assume the following values
 manual_slope = 0.95
 manual_zero = 10.
 

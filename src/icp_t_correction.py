@@ -91,7 +91,7 @@ def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,prefix,plot_f
     isubs = np.array([]) ; tsubs = np.array([])
     for ii, ts in enumerate(ts_icp3[:-1]):
         diff = ts_icp3[ii+1] - ts
-        if (diff < maxdt):
+        if (diff <= maxdt):
             isubs = np.append(isubs,i_icp3[ii])
             tsubs = np.append(tsubs,ts_icp3[ii])
         else:
