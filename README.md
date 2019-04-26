@@ -3,6 +3,8 @@
  2. Modify the top of cv_icp.py with the adequate:
 	- Names for the input files. 
 	- Area (in cm2) for getting the current density, j.
+	- The column with the ICP Steps.
+	- If the time correction is to be done manually.
 	- If plots are to be shown while running the code.
 	- Format of the output files.
  3. Run the python program, for example typing in the command line: '''python cv_icp.py'''
