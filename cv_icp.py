@@ -11,8 +11,8 @@ The header of the files can be of any lenght as long as the first
 character of each line is not a number.
 """
 #############Input files names to be modified#############
-steps_pots = '05_Zn_Steps_10RPM_1MKOH_02_CP_C01.txt'
-steps_icp = '05_Zn_Steps_10RPM_1MKOH.csv'
+steps_pots = '01_Zn_Steps_02_CP_C01.txt'
+steps_icp = '01_Zn_Steps.csv'
 preocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_01_OCV_C01.txt'
 cv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_03_CV_C01.txt'
 postocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_04_OCV_C01.txt'
