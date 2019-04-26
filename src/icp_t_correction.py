@@ -7,7 +7,6 @@ from .io import jumpheader
 from .plot_t_correction import show_corrected_steps
 import matplotlib.pyplot as plt
 
-coeff = 1.
 tstart = 180.
 dt = 120.
 
@@ -57,7 +56,7 @@ def read_icp_steps(steps_icp,icol_icp):
 
     return ts_icp, i_icp
 
-def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,prefix,plot_format='pdf'):
+def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fraction,prefix,plot_format='pdf'):
     '''
     Create a time array that starts in tstart and
     increases in steps of dt. 
@@ -78,7 +77,7 @@ def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,prefix,plot_f
     # find the height of this first pulse
     ind = np.where(ts_icp1 < ts_icp1[0]+dt)
     ts_icp2 = ts_icp1[ind] ; i_icp2 = i_icp1[ind]
-    reduced_height = max(i_icp2) - (max(i_icp2)-min(i_icp2))/5.
+    reduced_height = max(i_icp2) - (max(i_icp2)-min(i_icp2))/height_fraction
 
     # Cut all the data above half this peak
     # to remove dealing with the scatter of the peaks.
@@ -130,7 +129,7 @@ def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,prefix,plot_f
 
     return gt_icp,gi_icp
     
-def icp_t_correction(steps_icp,steps_pots,icol_icp,show_plots=True,plot_format='pdf'):
+def icp_t_correction(steps_icp,steps_pots,icol_icp,height_fraction,show_plots=True,plot_format='pdf'):
     '''
     Correct the time drift from the ICP measurements, by fitting to
     a straight line the start of a experiment using pulses (steps):
@@ -162,7 +161,7 @@ def icp_t_correction(steps_icp,steps_pots,icol_icp,show_plots=True,plot_format='
     gt_pots,gi_pots = get_start_step_pots(ts_icp,ts_pots,i_pots)
 
     # Generate the start of the ICP steps
-    gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,prefix,plot_format='pdf')
+    gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fraction,prefix,plot_format='pdf')
     
     # Fit a straight line to time(pots) vs time(ICP)
     # time(icp) = slope*time(pots) + zero

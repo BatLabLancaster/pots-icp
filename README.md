@@ -4,6 +4,7 @@
 	- Names for the input files. 
 	- Area (in cm2) for getting the current density, j.
 	- The column with the ICP Steps.
+	- The height fraction. This parameter is used to calculate the starting points of the ICP steps for the time correction. This fractions divides the height of the first ICP peak, removing the upper variations.
 	- If the time correction is to be done manually.
 	- If plots are to be shown while running the code.
 	- Format of the output files.
