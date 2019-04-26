@@ -4,124 +4,65 @@
 import numpy as np
 import sys, os.path
 from .io import jumpheader
+from .plot_t_correction import show_corrected_steps
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 
 coeff = 1.
+tstart = 180.
 dt = 120.
 
-def show_corrected_steps(slope,zero,gt_pots,gt_icp,ts_pots,ts_icp,i_pots,i_icp,prefix,show_plots=True,plot_format='pdf'):
-    # Plot set up
-    fig = plt.figure(figsize=(8.,9.))
-    gs = gridspec.GridSpec(4,1)
-    gs.update(wspace=0., hspace=0.)
-    xtit = 't_pots (s)'
-    xmin = gt_pots[0] ; xmax = gt_pots[-1]
-    axis_val = 200.
-    
-    # t/t vs t
-    ind = np.where((gt_pots>0.) & (gt_icp>0.))
-    ratioy = (slope*gt_pots[ind] + zero)/gt_icp[ind]
-    ratiox = (gt_icp[ind]-zero)/slope/gt_pots[ind]
-
-    ymin = min(min(ratiox),min(ratioy)) - np.mean(np.diff(ratiox))
-    ymax = max(max(ratiox),max(ratioy)) + np.mean(np.diff(ratiox))
-
-    axb = plt.subplot(gs[3,:])
-    axb.set_autoscale_on(False) ; axb.minorticks_on()
-    axb.set_xlim(xmin,xmax) ; axb.set_ylim(ymin,ymax)
-    axb.set_xlabel(xtit) 
-    ytit = 'Fit/value' ; axb.set_ylabel(ytit)
-
-    axb.plot(gt_pots[ind],ratioy,'b-')
-    axb.plot(gt_pots[ind],ratiox,'r--')
-    
-    # t vs t
-    ymin = gt_icp[0] - (gt_icp[1]-gt_icp[0])
-    ymax = gt_icp[-1] + (gt_icp[1]-gt_icp[0])
-
-    ax = plt.subplot(gs[2,:],sharex=axb) 
-    ytit = 't_icp (s)' ; ax.set_ylabel(ytit)
-    ax.set_autoscale_on(False) ; ax.minorticks_on()
-    ax.set_ylim(ymin,ymax) ; start, end = ax.get_xlim()
-    ax.xaxis.set_ticks(np.arange(start, end, axis_val))
-    ax.set_xticklabels([])
-    
-    ax.plot(gt_pots,gt_icp,'k.')
-    ax.plot(gt_pots,gt_pots*slope + zero,'b-',label='y=x*slope+zero')
-    ax.plot((gt_icp-zero)/slope,gt_icp,'r--',label='x=(y-zero)/slope')
-    ax.text(gt_pots[0], gt_icp[-1]-0.05*(gt_icp[-1]-gt_icp[0]),
-             'slope='+str(slope)+', zero='+str(zero))
-                                                 
-    leg = ax.legend(loc=4) ; leg.draw_frame(False)
-                                                 
-    # i vs t                                                 
-    ymin = min(min(i_pots),min(i_icp)) -\
-        max(np.mean(np.diff(i_pots)),np.mean(np.diff(i_icp)))
-    ymax = max(max(i_pots),max(i_icp)) +\
-        max(np.mean(np.diff(i_pots)),np.mean(np.diff(i_icp)))
-    
-    axs = plt.subplot(gs[:-2,:],sharex=axb) 
-    ytit = 'Current (arbitrary units)' ; axs.set_ylabel(ytit)
-    axs.set_autoscale_on(False) ; axs.minorticks_on()
-    axs.set_ylim(ymin,ymax) ; start, end = axs.get_xlim()
-    axs.xaxis.set_ticks(np.arange(start, end, axis_val))
-    ax.set_xticklabels([])
-    
-    axs.plot(ts_pots,i_pots,'k',label='Potentiostat')
-    axs.plot((ts_icp-zero)/slope,i_icp,'r',label='ICP corrected')
-
-    leg = axs.legend(loc=1) ; leg.draw_frame(False)
-
-    # Save plot
-    plotfile = 'output/'+'times_'+prefix+'.'+plot_format
-    fig.savefig(plotfile)
-    print('Time correction plot: {} \n'.format(plotfile))
-
-    return
-
-def icp_t_correction(steps_icp,steps_pots,icol_icp,show_plots=True,plot_format='pdf'):
+def get_start_step_pots(ts_icp,ts_pots,i_pots):
     '''
-    Correct the time drift from the ICP measurements, by fitting to
-    a straight line the start of a experiment using pulses (steps):
-    t_icp = slope*t_pots + zero
-
-    Arg:
-    steps_icp: characters, the name of the ICP steps file
-    steps_pots: characters, the name of the Potentiostat steps file
-    show_plots: boolean, to show or not the time correction plots
-
-    Return:
-    slope: float, the slope of the best fit
-    zero: float, the shift of the best fit
+    Create a time array that starts in tstart and
+    increases in steps of dt. 
+    These two variables are defined as global internal variables.
     '''
-    
-    # Check that the calibration files exist in the inputdata folder
-    for steps_f in [steps_pots,steps_icp]:
-        ff = 'inputdata/'+steps_f
-        if not os.path.isfile(ff):
-            print('STOP: file not found, \n {}'.format(ff)) ; sys.exit()
+    xx_all = np.arange(tstart,max(max(ts_pots),max(ts_icp)),dt)
+    gt_pots = xx_all[:-1]
+    gi_pots = np.interp(gt_pots, ts_pots, i_pots)
 
-    # Read the potential step times
+    return gt_pots,gi_pots
+
+def read_pots_steps(steps_pots):
+    '''
+    Read the potential step times and absolute currents
+    '''
+    # Check that the calibration file exists in the inputdata folder
+    ff = 'inputdata/'+steps_pots
+    if not os.path.isfile(ff):
+        print('STOP: file not found, \n {}'.format(ff)) ; sys.exit()
+    
     ih = jumpheader('inputdata/'+steps_pots)
     ts_pots, i_pots = np.loadtxt('inputdata/'+steps_pots,
                        usecols= (0,2),unpack=True, skiprows=ih)
-    i_pots = abs(i_pots)
-    
+    i_pots = abs(i_pots) # Absolute current
+
+    return ts_pots, i_pots
+
+def read_icp_steps(steps_icp,icol_icp):
+    '''
+    Read the ICP step times (in s) and absolute currents
+    '''
+    # Check that the calibration file exists in the inputdata folder
+    ff = 'inputdata/'+steps_icp
+    if not os.path.isfile(ff):
+        print('STOP: file not found, \n {}'.format(ff)) ; sys.exit()
+
     # Read the ICP step times
     ih = jumpheader('inputdata/'+steps_icp)
     ts_icp, i_icp = np.loadtxt('inputdata/'+steps_icp, delimiter=',',
                         usecols= (0,icol_icp),unpack=True, skiprows=ih)
     ts_icp = ts_icp*60. # in seconds
-    i_icp = abs(i_icp)
-    i_icp = (i_icp-min(i_icp))*max(i_pots)/max(i_icp)
+    i_icp = abs(i_icp)  # Absolute current
 
-    # Create a time array that starts in 180'' and
-    # increases in steps of 120"
-    xx_all = np.arange(180.,max(max(ts_pots),max(ts_icp)),dt)
-    gt_pots = xx_all[:-1]
-    gi_pots = np.interp(gt_pots, ts_pots, i_pots)
+    return ts_icp, i_icp
 
+def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,prefix,plot_format='pdf'):
+    '''
+    Create a time array that starts in tstart and
+    increases in steps of dt. 
+    These two variables are defined as global internal variables.
+    '''
     # Set arrays for the ICP step starts
     gt_icp = np.zeros(shape=len(gt_pots))
     gi_icp = np.zeros(shape=len(gt_pots))
@@ -183,18 +124,53 @@ def icp_t_correction(steps_icp,steps_pots,icol_icp,show_plots=True,plot_format='
     plt.plot(gt_icp,gi_icp,'ro',label='ICP Step start')
     leg = plt.legend(loc=1) ; leg.draw_frame(False)
 
-    plotfile = 'output/start_step_'+steps_icp+'.'+plot_format
-    plt.savefig('output/start_step_'+steps_icp+'.'+plot_format) 
+    plotfile = 'output/start_step_'+prefix+'.'+plot_format
+    plt.savefig('output/start_step_'+prefix+'.'+plot_format) 
     print('Plot with the start of the steps: {}'.format(plotfile))
 
+    return gt_icp,gi_icp
+    
+def icp_t_correction(steps_icp,steps_pots,icol_icp,show_plots=True,plot_format='pdf'):
+    '''
+    Correct the time drift from the ICP measurements, by fitting to
+    a straight line the start of a experiment using pulses (steps):
+    t_icp = slope*t_pots + zero
+
+    Arg:
+    steps_icp: characters, the name of the ICP steps file
+    steps_pots: characters, the name of the Potentiostat steps file
+    show_plots: boolean, to show or not the time correction plots
+
+    Return:
+    slope: float, the slope of the best fit
+    zero: float, the shift of the best fit
+    '''
+
+    # Prefix for plots
+    prefix = steps_icp.split('.')[0]
+        
+    # Read the pots calibration
+    ts_pots, i_pots= read_pots_steps(steps_pots)
+
+    # Read the ICP calibration
+    ts_icp, i_icp = read_icp_steps(steps_icp,icol_icp)
+
+    # Normalize the ICP arbitrarily
+    i_icp = (i_icp-min(i_icp))*max(i_pots)/max(i_icp)
+    
+    # Generate the start of the pots steps
+    gt_pots,gi_pots = get_start_step_pots(ts_icp,ts_pots,i_pots)
+
+    # Generate the start of the ICP steps
+    gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,prefix,plot_format='pdf')
+    
     # Fit a straight line to time(pots) vs time(ICP)
     # time(icp) = slope*time(pots) + zero
     fit, res, dum1, dum2, dum3 = np.polyfit(gt_pots,gt_icp,1,full=True)
     slope = fit[0] ; zero = fit[1] 
 
     # Plot the corrected steps
-    prefix = steps_icp.split('.')[0]
-    show_corrected_steps(slope,zero,gt_pots,gt_icp,ts_pots,ts_icp,i_pots,i_icp,prefix,show_plots=True,plot_format='pdf')
+    show_corrected_steps(slope,zero,gt_pots,gt_icp,ts_pots,ts_icp,i_pots,i_icp,prefix,plot_format='pdf')
 
     if show_plots: plt.show()
     
