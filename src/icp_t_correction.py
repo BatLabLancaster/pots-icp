@@ -10,117 +10,7 @@ import matplotlib.gridspec as gridspec
 coeff = 1.
 dt = 120.
 
-def icp_t_correction(steps_icp,steps_pots,show_plots=True,plot_format='pdf'):
-    '''
-    Correct the time drift from the ICP measurements, by fitting to
-    a straight line the start of a experiment using pulses (steps):
-    t_icp = slope*t_pots + zero
-
-    Arg:
-    steps_icp: characters, the name of the ICP steps file
-    steps_pots: characters, the name of the Potentiostat steps file
-    show_plots: boolean, to show or not the time correction plots
-
-    Return:
-    slope: float, the slope of the best fit
-    zero: float, the shift of the best fit
-    '''
-    
-    # Check that the calibration files exist in the inputdata folder
-    for steps_f in [steps_pots,steps_icp]:
-        ff = 'inputdata/'+steps_f
-        if not os.path.isfile(ff):
-            print('STOP: file not found, \n {}'.format(ff)) ; sys.exit()
-
-    # Read the potential step times
-    ih = jumpheader('inputdata/'+steps_pots)
-    ts_pots, i_pots = np.loadtxt('inputdata/'+steps_pots,
-                       usecols= (0,3),unpack=True, skiprows=ih)
-    i_pots = abs(i_pots)
-    
-    # Read the ICP step times
-    ih = jumpheader('inputdata/'+steps_icp)
-    ts_icp, i_icp = np.loadtxt('inputdata/'+steps_icp, delimiter=',',
-                        usecols= (0,2),unpack=True, skiprows=ih)
-    ts_icp = ts_icp*60. # in seconds
-    i_icp = abs(i_icp)
-    i_icp = (i_icp-min(i_icp))*max(i_pots)/max(i_icp)
-
-    # Create a time array that starts in 180'' and
-    # increases in steps of 120"
-    xx_all = np.arange(180.,max(max(ts_pots),max(ts_icp)),dt)
-    gt_pots = xx_all[:-1]
-    gi_pots = np.interp(gt_pots, ts_pots, i_pots)
-
-    # Set arrays for the ICP step starts
-    gt_icp = np.zeros(shape=len(gt_pots))
-    gi_icp = np.zeros(shape=len(gt_pots))
-
-    # Find the maximum dt
-    maxdt = np.max(np.diff(ts_icp))
-
-    # Remove the ICP values below the minimum of ts_pots
-    ind = np.where(ts_icp > min(ts_pots))
-    ts_icp1 = ts_icp[ind] ; i_icp1 = i_icp[ind]
-
-    # Assuming that the first pulse matches in time
-    # find the height of this first pulse
-    ind = np.where(ts_icp1 < ts_icp1[0]+dt)
-    ts_icp2 = ts_icp1[ind] ; i_icp2 = i_icp1[ind]
-    reduced_height = max(i_icp2) - (max(i_icp2)-min(i_icp2))/5.
-
-    # Cut all the data above half this peak
-    # to remove dealing with the scatter of the peaks.
-    ind = np.where(i_icp1 < reduced_height)
-    ts_icp3 = ts_icp1[ind] ; i_icp3 = i_icp1[ind]
-
-    # Work with the sub-sets before the peaks
-    # to find the step start
-    gjj = 0
-    isubs = np.array([]) ; tsubs = np.array([])
-    for ii, ts in enumerate(ts_icp3[:-1]):
-        diff = ts_icp3[ii+1] - ts
-        if (diff < maxdt):
-            isubs = np.append(isubs,i_icp3[ii])
-            tsubs = np.append(tsubs,ts_icp3[ii])
-        else:
-            # Obtain the derivatives to find changes in slope
-            m = np.diff(isubs)/np.diff(tsubs)
-
-            # Start of the step is considered to be the
-            # last point with a negative slope
-            ind = np.where(m<0.) #; print(np.shape(ind)[1]) 
-            if (np.shape(ind)[1] > 0):
-                indexes = np.squeeze(ind)
-                index = indexes[-1]
-                gt_icp[gjj] = tsubs[index]
-                gi_icp[gjj] = isubs[index]
-                if (gjj < len(gt_pots)-1):
-                    gjj += 1
-                else:
-                    break
-            
-            # Reset the subset arrays
-            isubs = np.array([]) ; tsubs = np.array([])
-
-    plt.xlabel('time (s)') ; plt.ylabel('Current (arbitrary units)')
-    plt.plot(ts_pots,i_pots,'k',label='Potentiostat')
-    plt.plot(gt_pots,gi_pots,'ko',label='Pots Step start')
-    plt.plot(ts_icp1,i_icp1,'r',label='ICP signal')
-    plt.plot(ts_icp2,i_icp2,'g.',label='1st ICP peak')
-    plt.plot(ts_icp3,i_icp3,'y.',label='ICP up to the 1st peak')
-    plt.plot(gt_icp,gi_icp,'ro',label='ICP Step start')
-    leg = plt.legend(loc=1) ; leg.draw_frame(False)
-    plotfile = 'output/start_step.'+plot_format
-    plt.savefig(plotfile)
-    print('Plot with the start of the steps: {}'.format(plotfile))
-    if show_plots: plt.show()
-
-    # Fit a straight line to time(pots) vs time(ICP)
-    # time(icp) = slope*time(pots) + zero
-    fit, res, dum1, dum2, dum3 = np.polyfit(gt_pots,gt_icp,1,full=True)
-    slope = fit[0] ; zero = fit[1] 
-
+def show_corrected_steps(slope,zero,gt_pots,gt_icp,ts_pots,ts_icp,i_pots,i_icp,prefix,show_plots=True,plot_format='pdf'):
     # Plot set up
     fig = plt.figure(figsize=(8.,9.))
     gs = gridspec.GridSpec(4,1)
@@ -184,10 +74,128 @@ def icp_t_correction(steps_icp,steps_pots,show_plots=True,plot_format='pdf'):
     leg = axs.legend(loc=1) ; leg.draw_frame(False)
 
     # Save plot
-    prefix = steps_icp.split('.')[0]
-    plotfile = 'output/'+prefix+'_times.'+plot_format
+    plotfile = 'output/'+'times_'+prefix+'.'+plot_format
     fig.savefig(plotfile)
     print('Time correction plot: {} \n'.format(plotfile))
-    if show_plots: plt.show()
 
+    return
+
+def icp_t_correction(steps_icp,steps_pots,icol_icp,show_plots=True,plot_format='pdf'):
+    '''
+    Correct the time drift from the ICP measurements, by fitting to
+    a straight line the start of a experiment using pulses (steps):
+    t_icp = slope*t_pots + zero
+
+    Arg:
+    steps_icp: characters, the name of the ICP steps file
+    steps_pots: characters, the name of the Potentiostat steps file
+    show_plots: boolean, to show or not the time correction plots
+
+    Return:
+    slope: float, the slope of the best fit
+    zero: float, the shift of the best fit
+    '''
+    
+    # Check that the calibration files exist in the inputdata folder
+    for steps_f in [steps_pots,steps_icp]:
+        ff = 'inputdata/'+steps_f
+        if not os.path.isfile(ff):
+            print('STOP: file not found, \n {}'.format(ff)) ; sys.exit()
+
+    # Read the potential step times
+    ih = jumpheader('inputdata/'+steps_pots)
+    ts_pots, i_pots = np.loadtxt('inputdata/'+steps_pots,
+                       usecols= (0,2),unpack=True, skiprows=ih)
+    i_pots = abs(i_pots)
+    
+    # Read the ICP step times
+    ih = jumpheader('inputdata/'+steps_icp)
+    ts_icp, i_icp = np.loadtxt('inputdata/'+steps_icp, delimiter=',',
+                        usecols= (0,icol_icp),unpack=True, skiprows=ih)
+    ts_icp = ts_icp*60. # in seconds
+    i_icp = abs(i_icp)
+    i_icp = (i_icp-min(i_icp))*max(i_pots)/max(i_icp)
+
+    # Create a time array that starts in 180'' and
+    # increases in steps of 120"
+    xx_all = np.arange(180.,max(max(ts_pots),max(ts_icp)),dt)
+    gt_pots = xx_all[:-1]
+    gi_pots = np.interp(gt_pots, ts_pots, i_pots)
+
+    # Set arrays for the ICP step starts
+    gt_icp = np.zeros(shape=len(gt_pots))
+    gi_icp = np.zeros(shape=len(gt_pots))
+
+    # Find the maximum dt
+    maxdt = np.max(np.diff(ts_icp))
+
+    # Remove the ICP values below the minimum of ts_pots
+    ind = np.where(ts_icp > min(ts_pots))
+    ts_icp1 = ts_icp[ind] ; i_icp1 = i_icp[ind]
+
+    # Assuming that the first pulse matches in time
+    # find the height of this first pulse
+    ind = np.where(ts_icp1 < ts_icp1[0]+dt)
+    ts_icp2 = ts_icp1[ind] ; i_icp2 = i_icp1[ind]
+    reduced_height = max(i_icp2) - (max(i_icp2)-min(i_icp2))/5.
+
+    # Cut all the data above half this peak
+    # to remove dealing with the scatter of the peaks.
+    ind = np.where(i_icp1 < reduced_height)
+    ts_icp3 = ts_icp1[ind] ; i_icp3 = i_icp1[ind]
+
+    # Work with the sub-sets before the peaks
+    # to find the step start
+    gjj = 0
+    isubs = np.array([]) ; tsubs = np.array([])
+    for ii, ts in enumerate(ts_icp3[:-1]):
+        diff = ts_icp3[ii+1] - ts
+        if (diff < maxdt):
+            isubs = np.append(isubs,i_icp3[ii])
+            tsubs = np.append(tsubs,ts_icp3[ii])
+        else:
+            # Obtain the derivatives to find changes in slope
+            m = np.diff(isubs)/np.diff(tsubs)
+
+            # Start of the step is considered to be the
+            # last point with a negative slope
+            ind = np.where(m<0.) #; print(np.shape(ind)[1]) 
+            if (np.shape(ind)[1] > 0):
+                indexes = np.squeeze(ind)
+                index = indexes[-1]
+                gt_icp[gjj] = tsubs[index]
+                gi_icp[gjj] = isubs[index]
+                if (gjj < len(gt_pots)-1):
+                    gjj += 1
+                else:
+                    break
+            
+            # Reset the subset arrays
+            isubs = np.array([]) ; tsubs = np.array([])
+
+    plt.figure()
+    plt.xlabel('time (s)') ; plt.ylabel('Current (arbitrary units)')
+    plt.plot(ts_pots,i_pots,'k',label='Potentiostat')
+    plt.plot(gt_pots,gi_pots,'ko',label='Pots Step start')
+    plt.plot(ts_icp1,i_icp1,'r',label='ICP signal')
+    plt.plot(ts_icp2,i_icp2,'g.',label='1st ICP peak')
+    plt.plot(ts_icp3,i_icp3,'y.',label='ICP up to the 1st peak')
+    plt.plot(gt_icp,gi_icp,'ro',label='ICP Step start')
+    leg = plt.legend(loc=1) ; leg.draw_frame(False)
+
+    plotfile = 'output/start_step_'+steps_icp+'.'+plot_format
+    plt.savefig('output/start_step_'+steps_icp+'.'+plot_format) 
+    print('Plot with the start of the steps: {}'.format(plotfile))
+
+    # Fit a straight line to time(pots) vs time(ICP)
+    # time(icp) = slope*time(pots) + zero
+    fit, res, dum1, dum2, dum3 = np.polyfit(gt_pots,gt_icp,1,full=True)
+    slope = fit[0] ; zero = fit[1] 
+
+    # Plot the corrected steps
+    prefix = steps_icp.split('.')[0]
+    show_corrected_steps(slope,zero,gt_pots,gt_icp,ts_pots,ts_icp,i_pots,i_icp,prefix,show_plots=True,plot_format='pdf')
+
+    if show_plots: plt.show()
+    
     return slope,zero

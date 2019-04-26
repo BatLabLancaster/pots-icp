@@ -11,16 +11,21 @@ The header of the files can be of any lenght as long as the first
 character of each line is not a number.
 """
 #############Input files names to be modified#############
-steps_pots = '08_Zn_Steps_30RPM_1MKOH_OneNeb2_01_02_CP_C01.txt'
-steps_icp = '08_Zn_Steps_30RPM_1MKOH_OneNeb2_01.csv'
+steps_pots = '01_Zn_Steps_02_CP_C01.txt'
+steps_icp = '01_Zn_Steps.csv'
 preocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_01_OCV_C01.txt'
 cv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_03_CV_C01.txt'
 postocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_04_OCV_C01.txt'
 icp_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02.csv'
 
 area =  1. # In cm2
+icol_icp = 1 # Column with the ICP Steps
 
-showplots = False  # True = plots are shown while program runs
+correct_time_manually = False # Assume the following values
+manual_slope = 0.95
+manual_zero = 10.
+
+showplots = True  # True = plots are shown while program runs
 plotformat = 'png' # or 'pdf'  or 'jpg'
 #####################################End of modifications
 
@@ -50,9 +55,13 @@ t_icp, icp = np.loadtxt(infiles[3], usecols= (0,2),
 t_icp = t_icp*60. # converting to seconds
 
 # Correct the ICP time
-slope, zero = icp_t_correction(steps_icp,steps_pots,
-                               show_plots=showplots,
-                               plot_format=plotformat)
+if correct_time_manually:
+    slope = manual_slope
+    zero = manual_slope
+else:
+    slope, zero = icp_t_correction(steps_icp,steps_pots,icol_icp,
+                                   show_plots=showplots,
+                                   plot_format=plotformat)
 t_icp = (t_icp - zero)/slope
 
 # Loop over the (O)CV files
