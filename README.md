@@ -1,5 +1,5 @@
 **cv_icp** This codes takes simultaneous measurements with different equipment that have different internal clocks and produce files and plots correcting for this. To run it:
- 1. Copy the input files into the inputdata folder
+ 1. Copy the input files into the *input* folder
  2. Modify the top of cv_icp.py with the adequate:
 	- Names for the input files. 
 	- Area (in cm2) for getting the current density, j.
@@ -19,8 +19,8 @@
 ├── README.md
 │
 ├── cv_icp.py          <- Code for simultaneous measurements
-├── inputdata          <- Folder containing the input data (files here are NOT tracked by git)
+├── input              <- Folder containing the input data (files here are NOT tracked by git)
 ├── output             <- Folder containing the output data and plots (files here are NOT tracked by git)
-└── src                <- Folder with general functions used by main programs here.
+└── src                <- Folder with functions used by main programs here.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

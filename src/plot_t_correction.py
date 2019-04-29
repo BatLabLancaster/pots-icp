@@ -2,7 +2,7 @@
 .. moduleauthor:: Violeta Gonzalez-Perez <violegp@gmail.com>
 """
 import numpy as np
-import sys, os.path
+import sys
 from .io import jumpheader
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
