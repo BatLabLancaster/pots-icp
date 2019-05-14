@@ -18,10 +18,10 @@ cv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_03_CV_C01.txt'
 postocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_04_OCV_C01.txt'
 icp_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02.csv'
 
-area =  1. # In cm2
+area =  1. # In cm2 to get j(mA cm-2)
 icol_icp = 1 # Column with the ICP Steps
 
-height_fraction = 3. # Affecting the calculation of the ICP steps
+height_fraction = 3. # Affecting the calculation of the time correction
 
 correct_time_manually = True # Assume the following values
 manual_slope = 0.95
@@ -33,7 +33,6 @@ plotformat = 'png' # or 'pdf'  or 'jpg'
 
 import numpy as np
 import sys,os.path
-from pathlib import Path
 import matplotlib.pyplot as plt
 from src.io import jumpheader
 from src.indexes import ind_val_leq
