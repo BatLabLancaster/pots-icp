@@ -1,6 +1,6 @@
 """A python module to deal with simultaneous measurements from different equipment.
 
-.. moduleauthor:: Violeta Gonzalez-Perez <violegp@gmail.com>
+.. moduleauthor:: Violeta Gonzalez-Perez <violetagp@protonmail.com>
 
 This program expects the data to be in this format:
 * pre_ocvfile,post_ocvfile: time(s) V
@@ -19,6 +19,7 @@ postocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_04_OCV_C01.txt'
 icp_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02.csv'
 
 area =  1. # In cm2 to get j(mA cm-2)
+stepcol_pots = 2 # Column with the current steps
 icol_icp = 1 # Column with the ICP Steps
 
 height_fraction = 3. # Affecting the calculation of the time correction

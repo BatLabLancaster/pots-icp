@@ -22,7 +22,7 @@ def get_start_step_pots(ts_icp,ts_pots,i_pots):
 
     return gt_pots,gi_pots
 
-def read_pots_steps(steps_pots):
+def read_pots_steps(steps_pots,stepcol_pots):
     '''
     Read the potential step times and absolute currents
     '''
@@ -33,7 +33,8 @@ def read_pots_steps(steps_pots):
     
     ih = jumpheader('inputdata/'+steps_pots)
     ts_pots, i_pots = np.loadtxt('inputdata/'+steps_pots,
-                       usecols= (0,2),unpack=True, skiprows=ih)
+                       usecols= (0,stepcol_pots),
+                                 unpack=True, skiprows=ih)
     i_pots = abs(i_pots) # Absolute current
 
     return ts_pots, i_pots
@@ -131,7 +132,7 @@ def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fracti
 
     return gt_icp,gi_icp
     
-def icp_t_correction(steps_icp,steps_pots,icol_icp,height_fraction,show_plots=True,plot_format='pdf'):
+def icp_t_correction(steps_icp,steps_pots,stepcol_pots,icol_icp,height_fraction,show_plots=True,plot_format='pdf'):
     '''
     Correct the time drift from the ICP measurements, by fitting to
     a straight line the start of a experiment using pulses (steps):
@@ -151,7 +152,7 @@ def icp_t_correction(steps_icp,steps_pots,icol_icp,height_fraction,show_plots=Tr
     prefix = steps_icp.split('.')[0]
         
     # Read the pots calibration
-    ts_pots, i_pots= read_pots_steps(steps_pots)
+    ts_pots, i_pots= read_pots_steps(steps_pots,stepcol_pots)
 
     # Read the ICP calibration
     ts_icp, i_icp = read_icp_steps(steps_icp,icol_icp)
