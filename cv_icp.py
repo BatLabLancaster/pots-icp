@@ -11,16 +11,19 @@ The header of the files can be of any lenght as long as the first
 character of each line is not a number.
 """
 #############Input files names to be modified#############
-steps_pots = '01_Zn_Steps_02_CP_C01.txt'
-steps_icp = '01_Zn_Steps.csv'
-preocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_01_OCV_C01.txt'
-cv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_03_CV_C01.txt'
-postocv_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02_04_OCV_C01.txt'
-icp_file = '04_Zn_CV_2mVs_30RPM_1MKOH_OneNeb2_02.csv'
+
+steps_pots = 'Steps_180632.txt'
+steps_icp = '01_Zn_Steps_15RPM_ICP.csv'
+preocv_file = 'OCP_192955.txt'
+cv_file = 'CV_193157_1.txt'
+postocv_file = 'OCP_200155.txt'
+icp_file = '04_Zn_CV_2mVs_1MKOH_15RPM.csv'
+
+multipleCVfiles = False
 
 area =  1. # In cm2 to get j(mA cm-2)
 stepcol_pots = 2 # Column with the current steps
-icol_icp = 1 # Column with the ICP Steps
+icol_icp = 1 # Column with the ICP steps
 
 height_fraction = 3. # Affecting the calculation of the time correction
 

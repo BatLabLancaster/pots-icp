@@ -1,5 +1,5 @@
 """
-.. moduleauthor:: Violeta Gonzalez-Perez <violegp@gmail.com>
+.. moduleauthor:: Violeta Gonzalez-Perez <violetagp@protonmail.com>
 """
 
 def ind_val_leq(arr,val):
