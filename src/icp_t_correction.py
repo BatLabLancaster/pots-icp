@@ -100,11 +100,20 @@ def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fracti
 
             # Start of the step is considered to be the
             # last point with a negative slope
-            ind = np.where(m<0.) #; print(np.shape(ind)[1]) 
-            if (np.shape(ind)[1] > 0):
+            ind = np.where(m<0.) #; print(np.shape(ind)[1])
+            if (np.shape(ind)[1] > 1):
                 indexes = np.squeeze(ind)
                 index = indexes[-1]
 
+                gt_icp[gjj] = tsubs[index]
+                gi_icp[gjj] = isubs[index]
+                if (gjj < len(gt_pots)-1):
+                    gjj += 1
+                else:
+                    break
+            elif (np.shape(ind)[1] == 1): 
+                index = ind[0][0]
+                #here: unclear how to do this part
                 gt_icp[gjj] = tsubs[index]
                 gi_icp[gjj] = isubs[index]
                 if (gjj < len(gt_pots)-1):

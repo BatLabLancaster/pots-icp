@@ -3,9 +3,9 @@
 .. moduleauthor:: Violeta Gonzalez-Perez <violetagp@protonmail.com>
 
 This program expects the data to be in this format:
-* pre_ocvfile,post_ocvfile: time(s) V
-* ocvfile: time(s) V dum I(mA)
-* icpfile: time(min),dum,ICP
+* pre_ocvfile,post_ocvfile: time(s) V 
+* cvfile: time(s) V cellV I(mA)
+* icpfile: time(min),...[ICP column to be specified via icol_icp, same as for the steps]
 
 The header of the files can be of any lenght as long as the first
 character of each line is not a number.
@@ -55,7 +55,7 @@ for ff in infiles:
 
 # Read the ICP data
 ih = jumpheader(infiles[3]) #; print('ih={}'.format(ih)) 
-t_icp, icp = np.loadtxt(infiles[3], usecols= (0,2),
+t_icp, icp = np.loadtxt(infiles[3], usecols= (0,icol_icp),
                                  unpack=True, skiprows=ih, delimiter=',')
 t_icp = t_icp*60. # converting to seconds
 
@@ -65,11 +65,14 @@ if correct_time_manually:
     zero = manual_zero
 
     prefix = steps_icp.split('.')[0]
-    ts_pots, i_pots= read_pots_steps(steps_pots)
+    ts_pots, i_pots= read_pots_steps(steps_pots,stepcol_pots)
     ts_icp, i_icp = read_icp_steps(steps_icp,icol_icp)
     i_icp = (i_icp-min(i_icp))*max(i_pots)/max(i_icp)
     gt_pots,gi_pots = get_start_step_pots(ts_icp,ts_pots,i_pots)
-    gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fraction,prefix,plot_format='pdf')
+    gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,
+                                       gt_pots,gi_pots,
+                                       height_fraction,
+                                       prefix,plot_format='pdf')
     ind=np.where(gt_icp>-999.)
     show_corrected_steps(slope,zero,gt_pots[ind],gt_icp[ind],ts_pots,ts_icp,i_pots,i_icp,prefix,plot_format='pdf')
     if (showplots): plt.show()
@@ -89,7 +92,7 @@ for i in range(nsubsets):
         times,voltage = np.loadtxt(infiles[i], usecols= (0,1),unpack=True, skiprows=ih)
         prop_label='V(V)'
     elif (i==1): # CV
-       times,voltage,current = np.loadtxt(infiles[i], usecols= (0,1,3),unpack=True, skiprows=ih)
+       times,voltage,cellV,current = np.loadtxt(infiles[i], usecols= (0,1,2,3),unpack=True, skiprows=ih)
        prop_label='I(mA)'
        
     # Check the stepping size
