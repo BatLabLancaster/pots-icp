@@ -9,6 +9,11 @@ This program expects the data to be in this format:
 
 The header of the files can be of any lenght as long as the first
 character of each line is not a number.
+
+For multiple CV files, this codes assume a name such:
+CV_*_#.txt 
+with # going from 1 to 99 and * being anything
+Note that spaces can be present in the name of CV files.
 """
 #############Input files names to be modified#############
 
@@ -19,7 +24,7 @@ cv_file = 'CV_193157_1.txt'
 postocv_file = 'OCP_200155.txt'
 icp_file = '04_Zn_CV_2mVs_1MKOH_15RPM.csv'
 
-multipleCVfiles = False
+multipleCVfiles = True #True for multiple CV files
 
 area =  1. # In cm2 to get j(mA cm-2)
 stepcol_pots = 2 # Column with the current steps
@@ -38,10 +43,14 @@ plotformat = 'png' # or 'pdf'  or 'jpg'
 import numpy as np
 import sys,os.path
 import matplotlib.pyplot as plt
-from src.io import jumpheader
+from src.io import jumpheader, joinCVfiles
 from src.indexes import ind_val_leq
 from src.icp_t_correction import *
 
+# Check if multiple CV files are expected
+if (multipleCVfiles):
+    cv_file = joinCVfiles()
+print(cv_file) ; sys.exit() #here
 # The files with the data to be analyzed
 files= [preocv_file,cv_file,postocv_file,icp_file]
 prefix= ['preocv','cv','postocv','icp']
