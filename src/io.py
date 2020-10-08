@@ -1,6 +1,7 @@
 """
 .. moduleauthor:: Violeta Gonzalez-Perez <violetagp@protonmail.com>
 """
+import os
 import numpy as np
 import glob
 
@@ -31,18 +32,31 @@ def jumpheader(infile):
     return ih
 
 
-def joinCVfiles():
+def joinCVfiles(cvf_name,overwrite=True):
     '''
     Join all the files CV_*_#.txt from the inputdata folder 
     into a single file
 
-    Returns:
-    cvfile : string
-       Name of the new single file 
+    Parameters:
+    cvf_name : string
+       Name of the new single file
+    overwrite : boolean
+       True to overwrite an existing file
     '''
-    cvfile = 'CVall.txt'
+
+    inpath = 'inputdata/'
+    cvfile = inpath+cvf_name
     
-    files = glob.glob('inputdata/CV*.txt')
+    if (os.path.isfile(cvfile) and not overwrite):
+        return
+
+    # Write header in combined file
+    with open(cvfile, 'w') as f:
+        f.write("# Time (s), Electrode_potential (V), Cell_Potential (V), I (A) \n")
+        f.close
+
+    # Find all the CV files
+    files = glob.glob('CV*.txt')
     nums = np.array([int(ff.split('_')[-1].split('.txt')[0]) for ff in files])
     isort = np.argsort(nums)
 
@@ -58,4 +72,4 @@ def joinCVfiles():
         #here: read, deal with header, etc
         print(ff)
         
-    return cvfile
+    return 

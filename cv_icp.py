@@ -49,7 +49,8 @@ from src.icp_t_correction import *
 
 # Check if multiple CV files are expected
 if (multipleCVfiles):
-    cv_file = joinCVfiles()
+    cv_file = 'CVall.txt'
+    joinCVfiles(cv_file)
 print(cv_file) ; sys.exit() #here
 # The files with the data to be analyzed
 files= [preocv_file,cv_file,postocv_file,icp_file]
@@ -102,7 +103,7 @@ for i in range(nsubsets):
         prop_label='V(V)'
     elif (i==1): # CV
        times,voltage,cellV,current = np.loadtxt(infiles[i], usecols= (0,1,2,3),unpack=True, skiprows=ih)
-       prop_label='I(mA)'
+       prop_label='I(mA)' #here: everything seems to be in A! 
        
     # Check the stepping size
     diff_t = np.unique(np.diff(times))
