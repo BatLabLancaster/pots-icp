@@ -3,7 +3,7 @@
  
  2. Modify the top of cv_icp.py with the adequate:
 	- steps_pots, ..., icp_file = Names for the input files.
-	- If there are multiple CVfiles (multipleCVfiles=True) or just the input one.
+	- If there are multiple CVfiles (multipleCVfiles=True) or just the input one. If multiple CVfiles are input, their names are expected to follow this structure (extra spaces are possible): 'CV_*_#.txt', with * being a number related to the date of the experiment and # the number of file for a given experiment.
 	- area = Area (in cm2) for getting the current density, j.
 	- stepcol_pots = The column number with the current steps.
 	- icol_icp = The column number with the ICP steps.		

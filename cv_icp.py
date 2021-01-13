@@ -41,7 +41,7 @@ plotformat = 'png' # or 'pdf'  or 'jpg'
 #####################################End of modifications
 
 import numpy as np
-import sys,os.path
+import os.path
 import matplotlib.pyplot as plt
 from src.io import jumpheader, joinCVfiles
 from src.indexes import ind_val_leq
@@ -51,7 +51,7 @@ from src.icp_t_correction import *
 if (multipleCVfiles):
     cv_file = 'CVall.txt'
     joinCVfiles(cv_file)
-print(cv_file) ; sys.exit() #here
+#print(cv_file) ; exit() #here
 # The files with the data to be analyzed
 files= [preocv_file,cv_file,postocv_file,icp_file]
 prefix= ['preocv','cv','postocv','icp']
