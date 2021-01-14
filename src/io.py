@@ -66,30 +66,41 @@ def joinCVfiles(cvf_name,overwrite=True):
         f.close
         
     # Add content from each CV file, following the isort order
-    jj = 0 ; ndays = 0 ; tlast = 0.
+    jj = 0 ; ndays = 0 ; tstart = 0.; first00 = True 
     for i in isort:
         ff = files[i]
-        fft = ff.split('_')[1].split('_')[0]
-        ffh = ndays*24+float(fft[:2])
-        
-        ffsec = ffh*3600. + float(fft[2:4])*60. + float(fft[4:6])
-        # What about experiments passing  midnight??
+
+        # Read the data
         ih = jumpheader(ff)
         time, ev, ucell, ia = np.loadtxt(ff, usecols=(0,1,2,3),
                           unpack=True, skiprows=ih)
 
-        jj += 1
-        cycle = np.full(shape=len(time),fill_value=jj)
+        # Total time
+        fft = ff.split('_')[1].split('_')[0]
 
-        if (ff ==  0):
+        if (fft[:2] == '00' and first00):
+            # Deal times passing midnight
+            first00 = False
+            ndays += 1
+        elif (fft[:2] != '00'):
+            first00 = True
+            
+        ffh = ndays*24 + float(fft[:2])
+        ffsec = ffh*3600. + float(fft[2:4])*60. + float(fft[4:6])
+        
+        if (jj ==  0):
             totalt = time
+            tstart = ffsec
         else:
-            totalt = time + ffsec - tlast
+            totalt = time + ffsec - tstart
+        print(fft, totalt[0],totalt[-1],totalt[-1]-totalt[0],tstart) #here
 
-        tlast = ffsec + time[-1]
+        # Create an array with cycle number
+        jj += 1  
+        cycle = np.full(shape=len(time),fill_value=jj)
 
         tofile = np.column_stack((totalt,ev,ucell,ia,time,cycle))
         with open(cvfile,'a') as outf:
-            np.savetxt(outf,tofile,fmt='%.5e')
-
+            np.savetxt(outf,tofile,fmt='%.10e %.5e %.5e %.5e %.5e %i')
+    exit() #here
     return 
