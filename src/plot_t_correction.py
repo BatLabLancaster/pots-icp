@@ -47,8 +47,9 @@ def show_corrected_steps(slope,zero,gt_pots,gt_icp,ts_pots,ts_icp,i_pots,i_icp,p
     ax.plot(gt_pots,gt_icp,'k.')
     ax.plot(gt_pots,gt_pots*slope + zero,'b-',label='y=x*slope+zero')
     ax.plot((gt_icp-zero)/slope,gt_icp,'r--',label='x=(y-zero)/slope')
-    ax.text(gt_pots[0], gt_icp[-1]-0.05*(gt_icp[-1]-gt_icp[0]),
-             'slope='+str(slope)+', zero='+str(zero))
+    ax.text(gt_pots[0]+0.05*(gt_pots[-1]-gt_pots[0]),
+            gt_icp[-1]-0.05*(gt_icp[-1]-gt_icp[0]),
+            'slope='+str(slope)+', zero='+str(zero))
                                                  
     leg = ax.legend(loc=4) ; leg.draw_frame(False)
                                                  
@@ -68,7 +69,7 @@ def show_corrected_steps(slope,zero,gt_pots,gt_icp,ts_pots,ts_icp,i_pots,i_icp,p
     axs.plot(ts_pots,i_pots,'k',label='Potentiostat')
     axs.plot((ts_icp-zero)/slope,i_icp,'r',label='ICP corrected')
 
-    leg = axs.legend(loc=1) ; leg.draw_frame(False)
+    leg = axs.legend(loc=0) ; leg.draw_frame(False)
 
     # Save plot
     plotfile = 'output/'+'times_'+prefix+'.'+plot_format

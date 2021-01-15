@@ -10,10 +10,9 @@ This program expects the data to be in this format:
 The header of the files can be of any lenght as long as the first
 character of each line is not a number.
 
-For multiple CV files, this codes assume a name such (spaces are possible):
-CV_*_#.txt 
-with * being hhmmss and # an integer.
-Note that spaces can be present in the name of CV files.
+For multiple CV files, this codes assume a name such:
+CV_*_#.txt     (with * being hhmmss and # an integer)
+Note that spaces CAN be present in the name of CV files.
 """
 #############Input files names to be modified#############
 
@@ -33,7 +32,7 @@ icol_icp = 1 # Column with the ICP steps
 height_fraction = 3. # Affecting the calculation of the time correction
 
 correct_time_manually = True # Assume the following values
-manual_slope = 0.95
+manual_slope = 0.5
 manual_zero = 10.
 
 showplots = True  # True = plots are shown while program runs
@@ -82,13 +81,15 @@ if correct_time_manually:
     gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,
                                        gt_pots,gi_pots,
                                        height_fraction,
-                                       prefix,plot_format='pdf')
+                                       prefix,plot_format=plotformat)
     ind=np.where(gt_icp>-999.)
-    show_corrected_steps(slope,zero,gt_pots[ind],gt_icp[ind],ts_pots,ts_icp,i_pots,i_icp,prefix,plot_format='pdf')
+    show_corrected_steps(slope,zero,gt_pots[ind],gt_icp[ind],
+                         ts_pots,ts_icp,i_pots,i_icp,prefix,plot_format=plotformat)
     if (showplots): plt.show()
 else:
     slope, zero = icp_t_correction(steps_icp,steps_pots,
-                                   icol_icp,height_fraction,
+                                   stepcol_pots,icol_icp,
+                                   height_fraction,
                                    show_plots=showplots,
                                    plot_format=plotformat)
 t_icp = (t_icp - zero)/slope
@@ -103,7 +104,7 @@ for i in range(nsubsets):
         prop_label='V(V)'
     elif (i==1): # CV
        times,voltage,cellV,current = np.loadtxt(infiles[i], usecols= (0,1,2,3),unpack=True, skiprows=ih)
-       prop_label='I(mA)' #here: everything seems to be in A! 
+       prop_label='I(A)'
        
     # Check the stepping size
     diff_t = np.unique(np.diff(times))
@@ -116,8 +117,8 @@ for i in range(nsubsets):
     print('  time({}): {:.3f} s to {:.3f} s'.format(prefixes[i],times[0],last_t))
 
     if (times[0] > t_icp[-1]):
-        sys.exit('STOP cv_icp.py \n   Potentiostate times are outside the ICP range')
-    
+        sys.exit('STOP (cv_icp:{}) \n Potentiostate times={} > {} (ICP range)'.format(prefixes[i],times[0],t_icp[-1]))
+
     if (i<2 and last_t < t_icp[-1]):
         # Find the index for the corresponding icpt
         # one extra point will be taken

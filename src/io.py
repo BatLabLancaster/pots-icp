@@ -93,7 +93,6 @@ def joinCVfiles(cvf_name,overwrite=True):
             tstart = ffsec
         else:
             totalt = time + ffsec - tstart
-        print(fft, totalt[0],totalt[-1],totalt[-1]-totalt[0],tstart) #here
 
         # Create an array with cycle number
         jj += 1  

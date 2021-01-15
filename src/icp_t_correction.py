@@ -2,7 +2,7 @@
 .. moduleauthor:: Violeta Gonzalez-Perez <violetagp@protonmail.com>
 """
 import numpy as np
-import sys, os.path
+import os.path
 from .io import jumpheader
 from .plot_t_correction import show_corrected_steps
 import matplotlib.pyplot as plt
@@ -29,7 +29,7 @@ def read_pots_steps(steps_pots,stepcol_pots):
     # Check that the calibration file exists in the inputdata folder
     ff = 'inputdata/'+steps_pots
     if not os.path.isfile(ff):
-        print('STOP: file not found, \n {}'.format(ff)) ; sys.exit()
+        print('STOP: file not found, \n {}'.format(ff)) ; exit()
     
     ih = jumpheader('inputdata/'+steps_pots)
     ts_pots, i_pots = np.loadtxt('inputdata/'+steps_pots,
@@ -46,7 +46,7 @@ def read_icp_steps(steps_icp,icol_icp):
     # Check that the calibration file exists in the inputdata folder
     ff = 'inputdata/'+steps_icp
     if not os.path.isfile(ff):
-        print('STOP: file not found, \n {}'.format(ff)) ; sys.exit()
+        print('STOP: file not found, \n {}'.format(ff)) ; exit()
 
     # Read the ICP step times
     ih = jumpheader('inputdata/'+steps_icp)
@@ -150,7 +150,10 @@ def icp_t_correction(steps_icp,steps_pots,stepcol_pots,icol_icp,height_fraction,
     Arg:
     steps_icp: characters, the name of the ICP steps file
     steps_pots: characters, the name of the Potentiostat steps file
+    stepcol_pots: integer, column with current steps
+    icol_icp: integer, column with ICP steps
     show_plots: boolean, to show or not the time correction plots
+    plot_format: characters, format for plots
 
     Return:
     slope: float, the slope of the best fit
@@ -159,7 +162,7 @@ def icp_t_correction(steps_icp,steps_pots,stepcol_pots,icol_icp,height_fraction,
 
     # Prefix for plots
     prefix = steps_icp.split('.')[0]
-        
+
     # Read the pots calibration
     ts_pots, i_pots= read_pots_steps(steps_pots,stepcol_pots)
 
@@ -173,7 +176,10 @@ def icp_t_correction(steps_icp,steps_pots,stepcol_pots,icol_icp,height_fraction,
     gt_pots,gi_pots = get_start_step_pots(ts_icp,ts_pots,i_pots)
 
     # Generate the start of the ICP steps
-    gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fraction,prefix,plot_format='pdf')
+    gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,
+                                       gt_pots,gi_pots,
+                                       height_fraction,
+                                       prefix,plot_format=plot_format)
 
     # Remove unassigned starting points
     ind=np.where(gt_icp>-999.)
