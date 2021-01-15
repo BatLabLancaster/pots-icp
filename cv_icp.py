@@ -10,9 +10,9 @@ This program expects the data to be in this format:
 The header of the files can be of any lenght as long as the first
 character of each line is not a number.
 
-For multiple CV files, this codes assume a name such:
+For multiple CV files, this codes assume a name such (spaces are possible):
 CV_*_#.txt 
-with # going from 1 to 99 and * being anything
+with * being hhmmss and # an integer.
 Note that spaces can be present in the name of CV files.
 """
 #############Input files names to be modified#############
@@ -51,10 +51,10 @@ from src.icp_t_correction import *
 if (multipleCVfiles):
     cv_file = 'CVall.txt'
     joinCVfiles(cv_file)
-#print(cv_file) ; exit() #here
+
 # The files with the data to be analyzed
 files= [preocv_file,cv_file,postocv_file,icp_file]
-prefix= ['preocv','cv','postocv','icp']
+prefixes= ['preocv','cv','postocv','icp']
 
 # Check that those files exist in the inputdata folder
 infiles = ['inputdata/'+ifile for ifile in files]
@@ -109,11 +109,11 @@ for i in range(nsubsets):
     diff_t = np.unique(np.diff(times))
     if (len(diff_t) > 1):
         if (max(np.diff(diff_t)) > 5e-4):
-            print('\n WARNING: there are different step sizes within {}: {} \n'.format(prefix[i],diff_t))
+            print('\n WARNING: there are different step sizes within {} ({}): {} \n'.format(prefixes[i],files[i],diff_t))
         
     # Find the time of the last measurement
     last_t = times[-1]
-    print('  time({}): {:.3f} s to {:.3f} s'.format(prefix[i],times[0],last_t))
+    print('  time({}): {:.3f} s to {:.3f} s'.format(prefixes[i],times[0],last_t))
 
     if (times[0] > t_icp[-1]):
         sys.exit('STOP cv_icp.py \n   Potentiostate times are outside the ICP range')
@@ -162,16 +162,16 @@ for i in range(nsubsets):
     ax1.plot(x_pots, y_pots, 'g-')
     ax2.plot(x_pots, y_icp, 'b-')
 
-    ax1.set_xlabel('time (s, '+prefix[i]+')')
+    ax1.set_xlabel('time (s, '+prefixes[i]+')')
     ax1.set_ylabel(prop_label, color='g')
     ax2.set_ylabel('ICP', color='b')
 
-    plotfile = 'output/'+prefix[i]+'.'+plotformat
+    plotfile = 'output/'+prefixes[i]+'.'+plotformat
     fig.savefig(plotfile,bbox_inches='tight')
     print('Output plot: ',plotfile)
         
     # Write output and plot
-    header1 = '# '+prefix[i]+'\n'
+    header1 = '# '+prefixes[i]+'\n' 
     tofile = np.array([])
     if (i==1):
         header2 = '# time,E,I,intensity,j \n'

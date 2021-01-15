@@ -102,5 +102,5 @@ def joinCVfiles(cvf_name,overwrite=True):
         tofile = np.column_stack((totalt,ev,ucell,ia,time,cycle))
         with open(cvfile,'a') as outf:
             np.savetxt(outf,tofile,fmt='%.10e %.5e %.5e %.5e %.5e %i')
-    exit() #here
+
     return 
