@@ -3,15 +3,31 @@
  
  2. Modify the top of cv_icp.py with the adequate:
 	- steps_pots, ..., icp_file = Names for the input files.
+	
 	- If there are multiple CVfiles (multipleCVfiles=True) or just the input one. If multiple CVfiles are input, their names are expected to follow this structure (extra spaces are possible): 'CV_*_#.txt', with * being a number related to the date of the experiment and # the number of file for a given experiment.
+	
 	- area = Area (in cm2) for getting the current density, j.
+	
 	- stepcol_pots = The column number with the current steps.
-	- icol_icp = The column number with the ICP steps.		
+	
+	- icol_icp = The column number with the ICP steps.
+	
 	- height_fraction = The height fraction. This parameter is used to calculate the starting points of the ICP steps for the time correction. This fractions divides the height of the first ICP peak, removing the upper variations. Vary this value if the red big dots in one of the Steps plots are not marking the beginning of the rise of the step for the ICP experiment.
+	
+	- tstart_pots = Start time for the Pots. Steps (used in the time correction)
+	
+	- dt_pots = Time intervals for the Pots. Steps (used in the time correction)
+	
 	- correct_time_manually =If the time correction is to be done manually and the values to be used.
-	- manual_slope = Value of the mannually set slope
-	- manual_zero = Zero value for the mannually set time correction.	
+	
+	- manual_slope = Value of the mannually set slope.
+	
+	- manual_zero = Zero value for the mannually set time correction.
+
+	- icols_icp = List with the columns (e.g. [1,2]) from the ICP steps file to be plotted in the comparison plots.
+	
 	- showplots = If plots are to be shown while running the code.
+	
 	- plotformat = Format of the output files.
 	
  3. Run the python program, for example typing in the command line: '''python3 cv_icp.py'''

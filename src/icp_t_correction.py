@@ -7,16 +7,12 @@ from .io import jumpheader
 from .plot_t_correction import show_corrected_steps
 import matplotlib.pyplot as plt
 
-tstart = 180.
-dt = 120.
-
-def get_start_step_pots(ts_icp,ts_pots,i_pots):
+def get_start_step_pots(ts_icp,ts_pots,i_pots,tstart_pots,dt_pots):
     '''
-    Create a time array that starts in tstart and
-    increases in steps of dt. 
-    These two variables are defined as global internal variables.
+    Create a time array that starts in tstart_pots and
+    increases in steps of dt_pots. 
     '''
-    xx_all = np.arange(tstart,max(max(ts_pots),max(ts_icp)),dt)
+    xx_all = np.arange(tstart_pots,max(max(ts_pots),max(ts_icp)),dt_pots)
     gt_pots = xx_all[:-1]
     gi_pots = np.interp(gt_pots, ts_pots, i_pots)
 
@@ -57,11 +53,10 @@ def read_icp_steps(steps_icp,icol_icp):
 
     return ts_icp, i_icp
 
-def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fraction,prefix,plot_format='pdf'):
+def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,tstart_pots,dt_pots,height_fraction,prefix,plot_format='pdf'):
     '''
-    Create a time array that starts in tstart and
-    increases in steps of dt. 
-    These two variables are defined as global internal variables.
+    Create a time array that starts in tstart_pots and
+    increases in steps of dt_pots. 
     '''
     # Set arrays for the ICP step starts
     gt_icp = np.zeros(shape=len(gt_pots)) ; gt_icp.fill(-999.)
@@ -76,7 +71,7 @@ def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fracti
 
     # Assuming that the first pulse matches in time
     # find the height of this first pulse
-    ind = np.where(ts_icp1 < ts_icp1[0]+dt)
+    ind = np.where(ts_icp1 < ts_icp1[0]+dt_pots)
     ts_icp2 = ts_icp1[ind] ; i_icp2 = i_icp1[ind]
     reduced_height = max(i_icp2) - (max(i_icp2)-min(i_icp2))/height_fraction
 
@@ -141,7 +136,7 @@ def get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,gt_pots,gi_pots,height_fracti
 
     return gt_icp,gi_icp
     
-def icp_t_correction(steps_icp,steps_pots,stepcol_pots,icol_icp,height_fraction,show_plots=True,plot_format='pdf'):
+def icp_t_correction(steps_icp,steps_pots,stepcol_pots,icol_icp,tstart_pots,dt_pots,height_fraction,show_plots=True,plot_format='pdf'):
     '''
     Correct the time drift from the ICP measurements, by fitting to
     a straight line the start of a experiment using pulses (steps):
@@ -152,6 +147,9 @@ def icp_t_correction(steps_icp,steps_pots,stepcol_pots,icol_icp,height_fraction,
     steps_pots: characters, the name of the Potentiostat steps file
     stepcol_pots: integer, column with current steps
     icol_icp: integer, column with ICP steps
+    tstart_pots: float, start time for Pots. Steps
+    dt_pots: float, interval for Pots. Steps
+    height_fraction: float, used in the time correction calculation
     show_plots: boolean, to show or not the time correction plots
     plot_format: characters, format for plots
 
@@ -173,11 +171,13 @@ def icp_t_correction(steps_icp,steps_pots,stepcol_pots,icol_icp,height_fraction,
     i_icp = (i_icp-min(i_icp))*max(i_pots)/max(i_icp)
     
     # Generate the start of the pots steps
-    gt_pots,gi_pots = get_start_step_pots(ts_icp,ts_pots,i_pots)
+    gt_pots,gi_pots = get_start_step_pots(ts_icp,ts_pots,i_pots,
+                                          tstart_pots,dt_pots)
 
     # Generate the start of the ICP steps
     gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,
                                        gt_pots,gi_pots,
+                                       tstart_pots,dt_pots,
                                        height_fraction,
                                        prefix,plot_format=plot_format)
 

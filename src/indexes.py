@@ -18,7 +18,7 @@ def ind_val_leq(arr,val):
 
     # Check that value is within the array
     if (val < arr[0] or val > arr[-1]):
-        print('STOP (indexes) \n value={} is outside the given array'.format(val))
+        print('STOP (src/indexes) \n value={} is outside the given array [{},...,{}]'.format(val,arr[0],arr[-1]))
         exit()
     elif (val == arr[0]):
         return 0
