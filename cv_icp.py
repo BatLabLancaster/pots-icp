@@ -135,12 +135,18 @@ for i in range(nsubsets):
         d_index = ind_val_leq(t_icp,last_t) + 1 #; print(d_index,t_icp[d_index],last_t) 
         # Define the ICP subset 
         t_icp_subset= t_icp[:d_index+1]
-        icp_subset= icp[:,:d_index+1]
+        if (len(icols_icp) == 1):
+            icp_subset= icp[:d_index+1]
+        else:
+            icp_subset= icp[:,:d_index+1]
 
         # Redefine t_icp for the next subset
         if(i < nsubsets-1):
             t_icp = t_icp[d_index-1:]
-            icp = icp[:,d_index-1:]
+            if (len(icols_icp) == 1):
+                icp = icp[d_index-1:]
+            else:
+                icp = icp[:,d_index-1:]
     else:
         t_icp_subset= t_icp
         icp_subset= icp
@@ -169,14 +175,18 @@ for i in range(nsubsets):
     ax2 = ax1.twinx()
     ax1.plot(x_pots, y_pots, 'k--')
 
-    for sub in icp_subset:
+    if (len(icols_icp) == 1):
         # Interpolate to the potentiostat times
-        y_icp = np.interp(x_pots,t_icp_subset,sub)
+        y_icp = np.interp(x_pots,t_icp_subset,icp_subset)
         ax2.plot(x_pots, y_icp)
+    else:
+        for sub in icp_subset:
+            y_icp = np.interp(x_pots,t_icp_subset,sub)
+            ax2.plot(x_pots, y_icp)
 
     ax1.set_xlabel('time (s, '+prefixes[i]+')')
     ax1.set_ylabel(prop_label, color='k')
-    ax2.set_ylabel('ICP', color='orange')
+    ax2.set_ylabel('ICP', color='b')
 
     plotfile = 'output/'+prefixes[i]+'.'+plotformat
     fig.savefig(plotfile,bbox_inches='tight')
