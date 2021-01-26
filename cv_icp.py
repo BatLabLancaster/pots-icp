@@ -37,6 +37,8 @@ correct_time_manually = False # Assume the following values
 manual_slope = 0.5
 manual_zero = 10.
 
+tini = dt_pots   # Start time to consider the CV data in plots
+
 icols_icp = [icol_icp,2] # Columns with ICP steps to be plot (e.g. [1,2])
 showplots = True  # True = plots are shown while program runs
 plotformat = 'png' # or 'pdf'  or 'jpg'
@@ -178,11 +180,17 @@ for i in range(nsubsets):
     if (len(icols_icp) == 1):
         # Interpolate to the potentiostat times
         y_icp = np.interp(x_pots,t_icp_subset,icp_subset)
-        ax2.plot(x_pots, y_icp)
+        if (i == 1):
+            ax2.plot(x_pots-tini, y_icp)
+        else:
+            ax2.plot(x_pots, y_icp)
     else:
         for sub in icp_subset:
             y_icp = np.interp(x_pots,t_icp_subset,sub)
-            ax2.plot(x_pots, y_icp)
+            if (i == 1):
+                ax2.plot(x_pots-tini, y_icp)
+            else:
+                ax2.plot(x_pots, y_icp)
 
     ax1.set_xlabel('time (s, '+prefixes[i]+')')
     ax1.set_ylabel(prop_label, color='k')
@@ -192,7 +200,7 @@ for i in range(nsubsets):
     fig.savefig(plotfile,bbox_inches='tight')
     print('Output plot: ',plotfile)
         
-    # Write output and plot
+    # Write output
     header1 = '# '+prefixes[i]+'\n' 
     tofile = np.array([])
     if (i==1):

@@ -16,13 +16,15 @@
 	
 	- tstart_pots = Start time for the Pots. Steps (used in the time correction)
 	
-	- dt_pots = Time intervals for the Pots. Steps (used in the time correction)
+	- dt_pots = Time intervals for the Pots. Steps (used in the time correction). 
 	
 	- correct_time_manually =If the time correction is to be done manually and the values to be used.
 	
 	- manual_slope = Value of the mannually set slope.
 	
 	- manual_zero = Zero value for the mannually set time correction.
+
+	- tini = Start time to consider the CV data in plots
 
 	- icols_icp = List with the columns (e.g. [1,2]) from the ICP steps file to be plotted in the comparison plots.
 	
