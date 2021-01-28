@@ -4,7 +4,7 @@
 import numpy as np
 import os.path
 from .io import jumpheader
-from .plot_t_correction import show_corrected_steps
+from .plotting import show_corrected_steps
 import matplotlib.pyplot as plt
 
 def get_start_step_pots(ts_icp,ts_pots,i_pots,tstart_pots,dt_pots):
@@ -194,4 +194,47 @@ def icp_t_correction(steps_icp,steps_pots,stepcol_pots,icol_icp,tstart_pots,dt_p
 
     if show_plots: plt.show()
     
+    return slope,zero
+
+
+def icp_t_manual(steps_icp,steps_pots,stepcol_pots,icol_icp,tstart_pots,dt_pots,height_fraction,slope=0.7,zero=0.,show_plots=True,plot_format='pdf'):
+    '''
+    Manually correct the time drift from the ICP measurements, by using a
+    defined straight line to fit the start of a experiment using pulses (steps):
+    t_icp = slope*t_pots + zero
+
+    Arg:
+    steps_icp: characters, the name of the ICP steps file
+    steps_pots: characters, the name of the Potentiostat steps file
+    stepcol_pots: integer, column with current steps
+    icol_icp: integer, column with ICP steps
+    tstart_pots: float, start time for Pots. Steps
+    dt_pots: float, interval for Pots. Steps
+    height_fraction: float, used in the time correction calculation
+    slope: float, slope to be used
+    zero: float, zero point to be used
+    show_plots: boolean, to show or not the time correction plots
+    plot_format: characters, format for plots
+
+    Return:
+    Shows the correction if shows_plots=True
+
+    '''
+    
+    prefix = steps_icp.split('.')[0]
+    ts_pots, i_pots= read_pots_steps(steps_pots,stepcol_pots)
+    ts_icp, i_icp = read_icp_steps(steps_icp,icol_icp)
+    i_icp = (i_icp-min(i_icp))*max(i_pots)/max(i_icp)
+    gt_pots,gi_pots = get_start_step_pots(ts_icp,ts_pots,i_pots,
+                                          tstart_pots,dt_pots)
+    gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,
+                                       gt_pots,gi_pots,
+                                       tstart_pots,dt_pots,
+                                       height_fraction,
+                                       prefix,plot_format=plot_format)
+    ind=np.where(gt_icp>-999.)
+    show_corrected_steps(slope,zero,gt_pots[ind],gt_icp[ind],
+                         ts_pots,ts_icp,i_pots,i_icp,prefix,plot_format=plot_format)
+    if (show_plots): plt.show()
+
     return slope,zero

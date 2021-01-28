@@ -47,8 +47,9 @@ plotformat = 'png' # or 'pdf'  or 'jpg'
 import numpy as np
 import os.path
 import matplotlib.pyplot as plt
-from src.io import jumpheader, joinCVfiles
 from src.indexes import ind_val_leq
+from src.plotting import show_pots_icp
+from src.io import *
 from src.icp_t_correction import *
 
 # Check if multiple CV files are expected
@@ -59,40 +60,24 @@ if (multipleCVfiles):
 # The files with the data to be analyzed
 files= [preocv_file,cv_file,postocv_file,icp_file]
 prefixes= ['preocv','cv','postocv','icp']
-
-# Check that those files exist in the inputdata folder
 infiles = ['inputdata/'+ifile for ifile in files]
 
-for ff in infiles:
-    if not os.path.isfile(ff):
-        print('STOP: file not found, \n {}'.format(ff)) ; sys.exit()
+# Check that those files exist in the inputdata folder
+check_files(infiles)
 
-# Read the ICP data
-ih = jumpheader(infiles[3]) #; print('ih={}'.format(ih)) 
-t_icp = np.loadtxt(infiles[3], usecols= (0,),
-                   unpack=True, skiprows=ih, delimiter=',')
-t_icp = t_icp*60. # converting to seconds
+# Read the ICP time in seconds
+t_icp = 60*read_columns(infiles[3],[0],delimiter=',')
 
 # Correct the ICP time
 if correct_time_manually:
-    slope = manual_slope
-    zero = manual_zero
-
-    prefix = steps_icp.split('.')[0]
-    ts_pots, i_pots= read_pots_steps(steps_pots,stepcol_pots)
-    ts_icp, i_icp = read_icp_steps(steps_icp,icol_icp)
-    i_icp = (i_icp-min(i_icp))*max(i_pots)/max(i_icp)
-    gt_pots,gi_pots = get_start_step_pots(ts_icp,ts_pots,i_pots,
-                                          tstart_pots,dt_pots)
-    gt_icp,gi_icp = get_start_step_icp(ts_pots,i_pots,ts_icp,i_icp,
-                                       gt_pots,gi_pots,
-                                       tstart_pots,dt_pots,
-                                       height_fraction,
-                                       prefix,plot_format=plotformat)
-    ind=np.where(gt_icp>-999.)
-    show_corrected_steps(slope,zero,gt_pots[ind],gt_icp[ind],
-                         ts_pots,ts_icp,i_pots,i_icp,prefix,plot_format=plotformat)
-    if (showplots): plt.show()
+    slope, zero = icp_t_manual(steps_icp,steps_pots,
+                               stepcol_pots,icol_icp,
+                               tstart_pots,dt_pots,
+                               height_fraction,
+                               slope=manual_slope,
+                               zero=manual_zero,
+                               show_plots=showplots,
+                               plot_format=plotformat)
 else:
     slope, zero = icp_t_correction(steps_icp,steps_pots,
                                    stepcol_pots,icol_icp,
@@ -103,20 +88,25 @@ else:
 t_icp = (t_icp - zero)/slope
 
 # Read the ICP data
-icp = np.loadtxt(infiles[3], usecols= (icols_icp),
-                 unpack=True, skiprows=ih, delimiter=',')
+icp = read_columns(infiles[3],icols_icp,delimiter=',')
 
 # Loop over the (O)CV files
-nsubsets = len(files)-1 
-for i in range(nsubsets):
-    # Read the data 
-    ih = jumpheader(infiles[i]) 
-    if (i==0 or i ==2): #Pre and post-ocv
-        times,voltage = np.loadtxt(infiles[i], usecols= (0,1),unpack=True, skiprows=ih)
+cvfiles = len(files)-1 
+for i in range(cvfiles):
+
+    if (i==0 or i ==2): 
+        # Read the Pre and Post-ocv files
+        times = read_columns(infiles[i],0)
+        voltage = read_columns(infiles[i],1)
         prop_label='V(V)'
-    elif (i==1): # CV
-       times,voltage,cellV,current = np.loadtxt(infiles[i], usecols= (0,1,2,3),unpack=True, skiprows=ih)
-       prop_label='I(A)'
+        
+    elif (i==1):
+        # Read the CV files
+        times = read_columns(infiles[i],0)
+        voltage = read_columns(infiles[i],1)
+        cellV = read_columns(infiles[i],2)
+        current = read_columns(infiles[i],3)
+        prop_label='I(A)'
        
     # Check the stepping size
     diff_t = np.unique(np.diff(times))
@@ -143,7 +133,7 @@ for i in range(nsubsets):
             icp_subset= icp[:,:d_index+1]
 
         # Redefine t_icp for the next subset
-        if(i < nsubsets-1):
+        if(i < cvfiles-1):
             t_icp = t_icp[d_index-1:]
             if (len(icols_icp) == 1):
                 icp = icp[d_index-1:]
@@ -171,35 +161,23 @@ for i in range(nsubsets):
         else:
             y_pots = voltage[:d_index+1]
 
-    # Plot
-    fig, ax1 = plt.subplots()
-    
-    ax2 = ax1.twinx()
-    ax1.plot(x_pots, y_pots, 'k--')
-
+    # Get different ICPs
     if (len(icols_icp) == 1):
-        # Interpolate to the potentiostat times
         y_icp = np.interp(x_pots,t_icp_subset,icp_subset)
-        if (i == 1):
-            ax2.plot(x_pots-tini, y_icp)
-        else:
-            ax2.plot(x_pots, y_icp)
     else:
+        isub = -1
         for sub in icp_subset:
-            y_icp = np.interp(x_pots,t_icp_subset,sub)
-            if (i == 1):
-                ax2.plot(x_pots-tini, y_icp)
+            y = np.interp(x_pots,t_icp_subset,sub)
+            isub += 1
+            if (isub == 0):
+                y_icp = y
             else:
-                ax2.plot(x_pots, y_icp)
+                y_icp = np.column_stack((y_icp,y))
 
-    ax1.set_xlabel('time (s, '+prefixes[i]+')')
-    ax1.set_ylabel(prop_label, color='k')
-    ax2.set_ylabel('ICP', color='b')
+    # Plot POTS and ICP
+    show_pots_icp(x_pots,y_pots,y_icp,tini,prop_label,
+                  prefixes[i],plot_format=plotformat)
 
-    plotfile = 'output/'+prefixes[i]+'.'+plotformat
-    fig.savefig(plotfile,bbox_inches='tight')
-    print('Output plot: ',plotfile)
-        
     # Write output
     header1 = '# '+prefixes[i]+'\n' 
     tofile = np.array([])

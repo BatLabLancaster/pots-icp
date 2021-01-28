@@ -5,6 +5,20 @@ import os
 import numpy as np
 import glob
 
+def check_files(infiles):
+    '''
+    Check the existance of an array of files
+
+    Args:
+    files: string, list with files names (with paths)
+    '''
+
+    for ff in infiles:
+        if not os.path.isfile(ff):
+            print('STOP: file not found, \n {}'.format(ff)) ; exit()
+
+    return
+
 def jumpheader(infile):
     '''
     Given a file with a structure: header+data, 
@@ -103,3 +117,27 @@ def joinCVfiles(cvf_name,overwrite=True):
             np.savetxt(outf,tofile,fmt='%.10e %.5e %.5e %.5e %.5e %i')
 
     return 
+
+
+def read_columns(infile,columns,delimiter=None):
+    '''
+    Read the columns in a file
+
+    Args:
+    infile: string, name of file (with path)
+    columns: integer or list of integers, position of the columns to be read
+    delimiter: string, delimiter to be used when reading the file
+    '''
+    
+    ih = jumpheader(infile) #; print('ih={}'.format(ih))
+    if delimiter:
+        values = np.loadtxt(infile, usecols= (columns),
+                            unpack=True, skiprows=ih, delimiter=',')
+    else:
+        values = np.loadtxt(infile, usecols= (columns),
+                            unpack=True, skiprows=ih)
+
+    return values
+
+
+#def write_output(prefix,tofile)
