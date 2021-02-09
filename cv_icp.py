@@ -64,6 +64,7 @@ infiles = ['inputdata/'+ifile for ifile in files]
 
 # Get ICP/intensity header
 icp_colnoms = get_col_nom(infiles[3],icols_icp,delimiter=',')
+icp_head = ", ".join(icp_colnoms)
 
 # Check that those files exist in the inputdata folder
 check_files(infiles)
@@ -181,17 +182,18 @@ for i in range(len(files)-1):
     show_pots_icp(xshift,y_pots,y_icp,tini,prop_label,
                   prefixes[i],plot_format=plotformat)
 
+
     # Write output
     header1 = '# '+prefixes[i]+'\n' 
     tofile = np.array([])
     if (i==1):
-        header2 = '# time,E,I,intensity,j \n'
-        header3 = '# s,V,mA,counts,mA cm-2 \n'
+        header2 = '# time, E, I, '+icp_head+', j \n'
+        header3 = '# s, V, mA, counts, mA cm-2 \n'
         y_pots_area = y_pots/area
         tofile = np.column_stack((xshift,vv,y_pots,y_icp,y_pots_area))
     else:
-        header2 = '# time,E,intensity \n'
-        header3 = '# s,V,counts \n'
+        header2 = '# time, E, '+icp_head+' \n'
+        header3 = '# s, V, counts \n'
         tofile = np.column_stack((xshift,y_pots,y_icp))
 
     outfil = 'output/'+files[i]
