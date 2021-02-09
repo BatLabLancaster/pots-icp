@@ -59,7 +59,6 @@ if (multipleCVfiles):
 # The files with the data to be analyzed
 files= [preocv_file,cv_file,postocv_file,icp_file]
 Dt = get_Dt(files)
-print(Dt) ; exit()
 prefixes= ['preocv','cv','postocv','icp']
 infiles = ['inputdata/'+ifile for ifile in files]
 
@@ -145,6 +144,7 @@ for i in range(len(files)-1):
 
     # Define the arrays to plot and store
     x_pots = times
+
     if(i == 1):
         y_pots = current
         vv = voltage
@@ -174,7 +174,8 @@ for i in range(len(files)-1):
                 y_icp = np.column_stack((y_icp,y))
 
     # Plot POTS and ICP
-    show_pots_icp(x_pots,y_pots,y_icp,tini,prop_label,
+    xshift = x_pots + Dt[i]
+    show_pots_icp(xshift,y_pots,y_icp,tini,prop_label,
                   prefixes[i],plot_format=plotformat)
 
     # Write output
@@ -184,11 +185,11 @@ for i in range(len(files)-1):
         header2 = '# time,E,I,intensity,j \n'
         header3 = '# s,V,mA,counts,mA cm-2 \n'
         y_pots_area = y_pots/area
-        tofile = np.column_stack((x_pots,vv,y_pots,y_icp,y_pots_area))
+        tofile = np.column_stack((xshift,vv,y_pots,y_icp,y_pots_area))
     else:
         header2 = '# time,E,intensity \n'
         header3 = '# s,V,counts \n'
-        tofile = np.column_stack((x_pots,y_pots,y_icp))
+        tofile = np.column_stack((xshift,y_pots,y_icp))
 
     outfil = 'output/'+files[i]
     with open(outfil, 'w') as outf:
