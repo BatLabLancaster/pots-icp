@@ -54,8 +54,7 @@ from src.icp_t_correction import *
 
 # Check if multiple CV files are expected
 if (multipleCVfiles):
-    cv_file = 'CVall.txt'
-    joinCVfiles(cv_file)
+    cv_file = joinCVfiles()
 
 # The files with the data to be analyzed
 files= [preocv_file,cv_file,postocv_file,icp_file]
@@ -89,10 +88,8 @@ t_icp = (t_icp - zero)/slope
 
 # Read the ICP data
 icp = read_columns(infiles[3],icols_icp,delimiter=',')
-
 # Loop over the (O)CV files
-cvfiles = len(files)-1 
-for i in range(cvfiles):
+for i in range(len(files)-1):
 
     if (i==0 or i ==2): 
         # Read the Pre and Post-ocv files
@@ -133,7 +130,7 @@ for i in range(cvfiles):
             icp_subset= icp[:,:d_index+1]
 
         # Redefine t_icp for the next subset
-        if(i < cvfiles-1):
+        if(i < len(files)-2):
             t_icp = t_icp[d_index-1:]
             if (len(icols_icp) == 1):
                 icp = icp[d_index-1:]

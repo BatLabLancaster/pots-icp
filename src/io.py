@@ -46,22 +46,21 @@ def jumpheader(infile):
     return ih
 
 
-def joinCVfiles(cvf_name,overwrite=True):
+def joinCVfiles(overwrite=True):
     '''
     Join all the files CV_*_#.txt from the inputdata folder 
     into a single file
 
     Parameters:
-    cvf_name : string
-       Name of the new single file
     overwrite : boolean
        True to overwrite an existing file
+
+    Return:
+    cvnom : string
+       Name of the output file
     '''
 
     inpath = 'inputdata/'
-    cvfile = inpath+cvf_name
-    if (os.path.isfile(cvfile) and not overwrite):
-        return
 
     # Find all the CV files
     files = glob.glob(inpath+'CV_*.txt') 
@@ -74,6 +73,12 @@ def joinCVfiles(cvf_name,overwrite=True):
     if (not np.array_equal(inarr,narr)):
         print('WARNING (joinCVfiles): there are missing CV files {}'.format(files))
 
+    t0cv = files[isort[0]].split('CV_')[-1].split('_')[0]
+    cvnom = 'CVall_'+t0cv+'.txt'
+    cvfile = inpath+cvnom
+    if (os.path.isfile(cvfile) and not overwrite):
+        return
+        
     # Write header in combined file
     with open(cvfile, 'w') as f:
         f.write("# Total time (s), Electrode_potential (V), Cell_Potential (V), I (A), Time (s), Cycle number \n")
@@ -116,7 +121,7 @@ def joinCVfiles(cvf_name,overwrite=True):
         with open(cvfile,'a') as outf:
             np.savetxt(outf,tofile,fmt='%.10e %.5e %.5e %.5e %.5e %i')
 
-    return 
+    return cvnom
 
 
 def read_columns(infile,columns,delimiter=None):
