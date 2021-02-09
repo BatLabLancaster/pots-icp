@@ -145,4 +145,47 @@ def read_columns(infile,columns,delimiter=None):
     return values
 
 
-#def write_output(prefix,tofile)
+def get_Dt(files):
+    '''
+    Get shift times to output continues times
+    across different output files
+
+    Parameters:
+    files : list of strings
+       Names of files
+
+    Return:
+    Dt : numpy array of floats
+       Shift times to be applied to output
+    '''
+
+    Dt0, Dt = [np.zeros(len(files)) for ii in range(2)]
+
+    ndays = 0 ; first00 = True
+    for ii, ff in enumerate(files[:-1]):
+        # Check that the name format is the expected one
+        try:
+            tini = ff.split('_')[1].split('.txt')[0]
+        except:
+            return Dt0
+
+        if (len(tini) != 6): return Dt0
+
+        # Total time
+        if (tini[:2] == '00' and first00):
+            # Deal times passing midnight
+            first00 = False
+            ndays += 1
+        elif (tini[:2] != '00'):
+            first00 = True
+            
+        th = ndays*24 + float(tini[:2])
+        tsec = th*3600. + float(tini[2:4])*60. + float(tini[4:6])
+
+        if (ii == 0):
+            t0pre = tsec
+            Dt[0] = 0.
+        else:
+            Dt[ii] = tsec - t0pre
+
+    return Dt

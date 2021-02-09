@@ -58,6 +58,8 @@ if (multipleCVfiles):
 
 # The files with the data to be analyzed
 files= [preocv_file,cv_file,postocv_file,icp_file]
+Dt = get_Dt(files)
+print(Dt) ; exit()
 prefixes= ['preocv','cv','postocv','icp']
 infiles = ['inputdata/'+ifile for ifile in files]
 
