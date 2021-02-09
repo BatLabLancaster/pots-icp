@@ -38,6 +38,8 @@
  
  5. Find your output files and plots in the output folder.
 
+Note that if the input files have names following: "prefix_hhmmss.txt", the time in these file names will be taken into account for the output times to run continously from preOCV to postOCV.
+
 **Dependencies**
 This code was developed using python3.7.1 and it requires the use of numpy, matplotlib. From the command line these can be installed with (changing *numpy* by the adecuate package):
 '''

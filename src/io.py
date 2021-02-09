@@ -144,6 +144,33 @@ def read_columns(infile,columns,delimiter=None):
 
     return values
 
+def get_col_nom(infile,columns,delimiter=None):
+    '''
+    Read the names of the given columns in a file
+
+    Args:
+    infile: string, name of file (with path)
+    columns: integer or list of integers, position of the columns to be read
+    delimiter: string, delimiter to be used when reading the file
+    '''
+
+    colnames=[' ']*len(columns)
+
+    ih = jumpheader(infile)
+
+    with open(infile, 'r') as ff:
+        ii = 0
+        for line in ff:
+            ii += 1
+            if (ii == ih):
+                head = line.rstrip().split(delimiter)
+                break
+
+    for ii,icol in enumerate(columns):
+        colnames[ii] = head[icol]
+    
+    return colnames
+
 
 def get_Dt(files):
     '''

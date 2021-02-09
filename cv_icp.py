@@ -55,12 +55,15 @@ from src.icp_t_correction import *
 # Check if multiple CV files are expected
 if (multipleCVfiles):
     cv_file = joinCVfiles()
-
+     
 # The files with the data to be analyzed
 files= [preocv_file,cv_file,postocv_file,icp_file]
 Dt = get_Dt(files)
 prefixes= ['preocv','cv','postocv','icp']
 infiles = ['inputdata/'+ifile for ifile in files]
+
+# Get ICP/intensity header
+icp_colnoms = get_col_nom(infiles[3],icols_icp,delimiter=',')
 
 # Check that those files exist in the inputdata folder
 check_files(infiles)
