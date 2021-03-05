@@ -79,33 +79,29 @@ def show_corrected_steps(slope,zero,gt_pots,gt_icp,ts_pots,ts_icp,i_pots,i_icp,p
     return
 
 
-def show_pots_icp(x_pots,y_pots,iny_icp,tini,prop_label,
-                  prefix,plot_format='pdf'):
+def show_pots_icp(xx,y_pots,iny_icp,tini,prop_label,prefix,
+                  plot_format='pdf',icplabels=None):
+    
     # Plot set up
     fig, ax1 = plt.subplots()
     
     ax2 = ax1.twinx()
-    ax1.plot(x_pots, y_pots, 'k--')
-
+    ax1.plot(xx, y_pots, 'k--', label='Pots')
+    
     if (np.ndim(iny_icp) == 1):
-        # Interpolate to the potentiostat times
         y_icp = iny_icp
-        if (prefix == 'cv'):
-            ax2.plot(x_pots-tini, y_icp)
-        else:
-            ax2.plot(x_pots, y_icp)
+        ax2.plot(xx, y_icp,label='ICP')
     else:
         for ii in range(np.shape(iny_icp)[1]):
             y_icp = iny_icp[:,ii]
-            if (prefix == 'cv'):
-                ax2.plot(x_pots-tini, y_icp)
-            else:
-                ax2.plot(x_pots, y_icp)
+            ax2.plot(xx, y_icp,label=icplabels[ii])
 
     ax1.set_xlabel('time (s, '+prefix+')')
     ax1.set_ylabel(prop_label, color='k')
     ax2.set_ylabel('ICP', color='b')
 
+    plt.legend(loc=0)
+    
     plotfile = 'output/'+prefix+'.'+plot_format
     fig.savefig(plotfile,bbox_inches='tight')
     print('Output plot: ',plotfile)

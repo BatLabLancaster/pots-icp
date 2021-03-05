@@ -174,7 +174,7 @@ def get_col_nom(infile,columns,delimiter=None):
 
 def get_Dt(files):
     '''
-    Get shift times to output continues times
+    Get shift times to output continuous times
     across different output files
 
     Parameters:

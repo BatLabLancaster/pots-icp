@@ -47,7 +47,7 @@ plotformat = 'png' # or 'pdf'  or 'jpg'
 import numpy as np
 import os.path
 import matplotlib.pyplot as plt
-from src.indexes import ind_val_leq
+from src.indexes import get_icp_subsets
 from src.plotting import show_pots_icp
 from src.io import *
 from src.icp_t_correction import *
@@ -93,6 +93,7 @@ t_icp = (t_icp - zero)/slope
 
 # Read the ICP data
 icp = read_columns(infiles[3],icols_icp,delimiter=',')
+
 # Loop over the (O)CV files
 for i in range(len(files)-1):
 
@@ -103,7 +104,7 @@ for i in range(len(files)-1):
         prop_label='V(V)'
         
     elif (i==1):
-        # Read the CV files
+        # Read the CV files, ignoring data for t<tini
         times = read_columns(infiles[i],0)
         voltage = read_columns(infiles[i],1)
         cellV = read_columns(infiles[i],2)
@@ -117,56 +118,28 @@ for i in range(len(files)-1):
             print('\n WARNING: there are different step sizes within {} ({}): {} \n'.format(prefixes[i],files[i],diff_t))
         
     # Find the time of the last measurement
-    last_t = times[-1]
-    print('  time({}): {:.3f} s to {:.3f} s'.format(prefixes[i],times[0],last_t))
+    print('  time({})+Dt: {:.3f} s to {:.3f} s'.format(prefixes[i],times[0]+Dt[i],times[-1]+Dt[i]))
 
-    if (times[0] > t_icp[-1]):
-        sys.exit('STOP (cv_icp:{}) \n Potentiostate times={} > {} (ICP range)'.format(prefixes[i],times[0],t_icp[-1]))
+    t_icp_subset, icp_subset = get_icp_subsets(prefixes[i],
+                                               times[0],times[-1],Dt[i],
+                                               t_icp,icp,len(icols_icp))
 
-    if (i<2 and last_t < t_icp[-1]):
-        # Find the index for the corresponding icpt
-        # one extra point will be taken
-        d_index = ind_val_leq(t_icp,last_t) + 1 #; print(d_index,t_icp[d_index],last_t) 
-        # Define the ICP subset 
-        t_icp_subset= t_icp[:d_index+1]
-        if (len(icols_icp) == 1):
-            icp_subset= icp[:d_index+1]
-        else:
-            icp_subset= icp[:,:d_index+1]
-
-        # Redefine t_icp for the next subset
-        if(i < len(files)-2):
-            t_icp = t_icp[d_index-1:]
-            if (len(icols_icp) == 1):
-                icp = icp[d_index-1:]
-            else:
-                icp = icp[:,d_index-1:]
-    else:
-        t_icp_subset= t_icp
-        icp_subset= icp
     print('  times(ICP subset): {:.3f} s to {:.3f} s'.format(t_icp_subset[0],t_icp_subset[-1]))
 
     # Define the arrays to plot and store
-    x_pots = times
+    x_pots = times+Dt[i]
 
     if(i == 1):
         y_pots = current
         vv = voltage
     else:
         y_pots = voltage
-    # Take into account the values to the potentiostat up to the last ICP time
-    if(times[-1]>t_icp_subset[-1]):
-        d_index = ind_val_leq(times,t_icp_subset[-1])
-        x_pots = times[:d_index+1]
-        if(i == 1):
-            y_pots = current[:d_index+1]
-            vv = voltage[:d_index+1]
-        else:
-            y_pots = voltage[:d_index+1]
 
+        
     # Get different ICPs
     if (len(icols_icp) == 1):
         y_icp = np.interp(x_pots,t_icp_subset,icp_subset)
+        print(prefixes[i],y_icp,t_icp_subset,icp_subset,'+++')
     else:
         isub = -1
         for sub in icp_subset:
@@ -178,10 +151,9 @@ for i in range(len(files)-1):
                 y_icp = np.column_stack((y_icp,y))
 
     # Plot POTS and ICP
-    xshift = x_pots + Dt[i]
-    show_pots_icp(xshift,y_pots,y_icp,tini,prop_label,
-                  prefixes[i],plot_format=plotformat)
-
+    show_pots_icp(x_pots,y_pots,y_icp,tini,prop_label,
+                  prefixes[i],plot_format=plotformat,
+                  icplabels=icp_colnoms)
 
     # Write output
     header1 = '# '+prefixes[i]+'\n' 
@@ -190,11 +162,11 @@ for i in range(len(files)-1):
         header2 = '# time, E, I, '+icp_head+', j \n'
         header3 = '# s, V, mA, counts, mA cm-2 \n'
         y_pots_area = y_pots/area
-        tofile = np.column_stack((xshift,vv,y_pots,y_icp,y_pots_area))
+        tofile = np.column_stack((x_pots,vv,y_pots,y_icp,y_pots_area))
     else:
         header2 = '# time, E, '+icp_head+' \n'
         header3 = '# s, V, counts \n'
-        tofile = np.column_stack((xshift,y_pots,y_icp))
+        tofile = np.column_stack((x_pots,y_pots,y_icp))
 
     outfil = 'output/'+files[i]
     with open(outfil, 'w') as outf:
@@ -205,4 +177,4 @@ for i in range(len(files)-1):
     outf.closed
     print('Output file: {}'.format(outfil))
 
-if (showplots): plt.show()
+    if (showplots): plt.show()
